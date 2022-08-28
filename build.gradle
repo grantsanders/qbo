@@ -1,0 +1,37 @@
+plugins {
+	id 'org.springframework.boot' version '2.7.3'
+	id 'io.spring.dependency-management' version '1.0.13.RELEASE'
+	id 'java'
+	id 'application'
+	id 'org.openjfx.javafxplugin' version '0.0.10'
+}
+
+application {
+	mainClass = 'com.fx.qbo.QboApplication'
+}
+
+javafx {
+	version '18.0.2'
+	modules = [ 'javafx.controls', 'javafx.web', 'javafx.base', 'javafx.swing', 'javafx.fxml' ]
+}
+
+group = 'com.fx'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '18'
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation ("com.intuit.quickbooks-online:ipp-v3-java-data:6.0.7")
+	implementation  (group: 'com.intuit.quickbooks-online', name: 'ipp-v3-java-devkit', version: '6.0.7', classifier: 'jar-with-dependencies')
+	implementation (group: 'com.intuit.quickbooks-online', name: 'oauth2-platform-api', version: '6.0.7', classifier: 'jar-with-dependencies')
+	implementation 'com.google.code.gson:gson:2.9.1'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
