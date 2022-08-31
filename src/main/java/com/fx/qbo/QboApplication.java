@@ -11,7 +11,7 @@ public class QboApplication {
 
 	public static void main(String[] args) {
 		ClientGUI main = new ClientGUI();
-
+		
 		SpringApplication.run(QboApplication.class, args);
 	}
 }

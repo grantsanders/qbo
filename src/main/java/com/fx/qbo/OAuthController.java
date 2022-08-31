@@ -2,10 +2,21 @@ package com.fx.qbo;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpRequest.BodyPublisher;
+import java.net.http.HttpRequest.BodyPublishers;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.management.Query;
+import javax.swing.text.html.HTMLDocument.Iterator;
+
+import org.apache.http.client.utils.URIBuilder;
+import org.springframework.web.util.UriBuilder;
 
 import com.google.gson.Gson;
 import com.intuit.ipp.core.Context;
@@ -42,7 +53,8 @@ public class OAuthController {
   private static String accessToken = "";
   private static String refreshToken = "";
   private static String realmId = "";
-  private List<Scope> scopes = new ArrayList<Scope>();
+  private static String baseURL = "https://sandbox-quickbooks.api.intuit.com";
+
 
   private OAuth2Config oauth2Config = new OAuth2Config.OAuth2ConfigBuilder(clientId, clientSecret)
       .callDiscoveryAPI(Environment.SANDBOX)
@@ -51,8 +63,15 @@ public class OAuthController {
   public void setOAuthUrl() throws InvalidRequestException, IOException, OAuthException {
 
     String csrf = oauth2Config.generateCSRFToken();
+    List<Scope> scopes = new ArrayList<Scope>();
 
     scopes.add(Scope.Accounting);
+    scopes.add(Scope.OpenId);
+    scopes.add(Scope.Email);
+    scopes.add(Scope.Address);
+    scopes.add(Scope.Phone);
+    scopes.add(Scope.Profile);
+
 
     url = oauth2Config.prepareUrl(scopes, redirectUri, csrf);
 
@@ -61,7 +80,6 @@ public class OAuthController {
   public void request() {
     // Prepare OAuth2PlatformClient
     OAuth2PlatformClient client = new OAuth2PlatformClient(oauth2Config);
-
     // Get the bearer token (OAuth2 tokens)
 
     try {
@@ -69,24 +87,32 @@ public class OAuthController {
 
       accessToken = bearerTokenResponse.getAccessToken();
 
-      refreshToken = bearerTokenResponse.getRefreshToken();
-
-      OAuth2Authorizer authorizer = new OAuth2Authorizer(refreshToken);
-
-      Context context = new Context(authorizer, ServiceType.QBO, realmId);
-
-      DataService service = new DataService(context);
+      // refreshToken = bearerTokenResponse.getRefreshToken();
 
       Customer customer = new Customer();
       customer.setDisplayName("bruh");
-      customer.setGivenName("bruh sandwich");
 
-      Customer resultCustomer = service.add(customer);
+      URIBuilder builder = new URIBuilder() 
+      .setScheme("https")
+      .setHost("sandbox-quickbooks.api.intuit.com")
+      .setPath("/v3/company/" + realmId + "/query")
+      .setParameter("query", "select * from customer where displayname = 'bruh'");
+      String query = builder.toString();      
 
-    } catch (FMSException e1) {
-      Popup FMSException = new Popup("FMSException", "Error: Invalid authorization request");
-      FMSException.setVisible(true);
-      e1.printStackTrace();
+      HttpClient HTTPClient = HttpClient.newHttpClient();
+      HttpRequest request = HttpRequest.newBuilder()
+          .uri(URI.create(query))
+          .header("Authorization", "Bearer " + accessToken)
+          .header("content_type", "application/json")
+          .header("Accept", "application/json")
+          .GET()
+          .build();
+      HTTPClient.sendAsync(request, BodyHandlers.ofString())
+          .thenApply(HttpResponse::body)
+          .thenAccept(System.out::println)
+          .join();
+
+
     } catch (OAuthException e) {
       Popup OAuthException = new Popup("OAuthException", "Error: Invalid OAuth Request");
       OAuthException.setVisible(true);

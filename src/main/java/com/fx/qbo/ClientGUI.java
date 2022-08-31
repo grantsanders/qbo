@@ -83,6 +83,7 @@ public class ClientGUI {
 			@Override
 			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
 				auth.setAuthCode(authCode);
+				auth.setRealmId(realmId);
 				buildUserPlatform();
 			}
 		});
@@ -176,6 +177,7 @@ public class ClientGUI {
 				main.add(importerLabel, mgr);
 				mgr.gridy = 3;
 				main.add(importerButton, mgr);
+
 			}
 		});
 
@@ -197,6 +199,7 @@ public class ClientGUI {
 		csvFrame.add(main);
 		csvFrame.setLocationRelativeTo(null);
 		csvFrame.setVisible(true);
+		csvFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 	}
 
