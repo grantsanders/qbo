@@ -188,10 +188,14 @@ public class ClientGUI {
 			if ((fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length()).equals("csv")) == false) {
 				importerLabel.setText("does that look like a csv to you??");
 			} else {
-				importerLabel.setText("Attempting to import...");
-				// format data into invoice objects
-				// run the api call and try to create invoice
-				auth.request();
+				importerLabel.setText("Authenticating...");
+				auth.getTokens();
+				importerLabel.setText("formatting items...");
+				FileHandler handler = new FileHandler(filePath);
+				
+
+
+				
 
 			}
 		});
