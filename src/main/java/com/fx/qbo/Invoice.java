@@ -1,33 +1,44 @@
-// package com.fx.qbo;
+package com.fx.qbo;
 
-// public class Invoice {
-//     CustomerRef CustomerRef = new CustomerRef();
-//     Line Line = new Line();
+import java.util.ArrayList;
 
-//     public Invoice() {
-//     }
+public class Invoice {
+    CustomerRef CustomerRef = new CustomerRef();
+    ArrayList<Line> Line = new ArrayList<Line>();
 
-//     class Line {
-//         public Line() {
-//         }
+    public Invoice() {
+        Line.add(new Line());
+    }
 
-//         private String detailType = "SalesItemLineDetail";
-//         private double Amount = 100;
-//         private String Description = "bruh";
+    class Line {
+        public Line() {
+        }
 
-//         class Item {
-//             private String name = "Services";
-//             private String value = "1";
-//         }
+        private SalesItemLineDetail SalesItemLineDetail = new SalesItemLineDetail();
+        private double Amount = 100;
+        private String DetailType = "SalesItemLineDetail";
+        private String Description = "bruh";
 
-//     }
+        class SalesItemLineDetail {
+            public SalesItemLineDetail() {
+            }
 
-//     class CustomerRef {
-//         public CustomerRef() {
-//         }
+            private ItemRef ItemRef = new ItemRef();
 
-//         private String value = "1";
-//         private String name = "";
-//     }
+            class ItemRef {
+                private String name = "Services";
+                private String value = "1";
+            }
+        }
 
-// }
+    }
+
+    class CustomerRef {
+        public CustomerRef() {
+        }
+
+        private String value = "1";
+        private String name = "";
+    }
+
+}

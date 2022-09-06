@@ -15,10 +15,13 @@ import java.util.List;
 import javax.management.Query;
 import javax.swing.text.html.HTMLDocument.Iterator;
 
+import org.apache.commons.codec.binary.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.springframework.web.util.UriBuilder;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import com.intuit.ipp.core.Context;
 import com.intuit.ipp.core.ServiceType;
 import com.intuit.ipp.data.Customer;
@@ -55,7 +58,6 @@ public class OAuthController {
   private static String realmId = "";
   private static String baseURL = "https://sandbox-quickbooks.api.intuit.com";
 
-
   private OAuth2Config oauth2Config = new OAuth2Config.OAuth2ConfigBuilder(clientId, clientSecret)
       .callDiscoveryAPI(Environment.SANDBOX)
       .buildConfig();
@@ -72,42 +74,34 @@ public class OAuthController {
     scopes.add(Scope.Phone);
     scopes.add(Scope.Profile);
 
-
     url = oauth2Config.prepareUrl(scopes, redirectUri, csrf);
 
   }
 
-  public void request() {
-    // Prepare OAuth2PlatformClient
-    OAuth2PlatformClient client = new OAuth2PlatformClient(oauth2Config);
-    // Get the bearer token (OAuth2 tokens)
+  public void getTokens() {
 
     try {
+      OAuth2PlatformClient client = new OAuth2PlatformClient(oauth2Config);
       BearerTokenResponse bearerTokenResponse = client.retrieveBearerTokens(authCode, redirectUri);
-
       accessToken = bearerTokenResponse.getAccessToken();
 
-      // refreshToken = bearerTokenResponse.getRefreshToken();
+      com.fx.qbo.Invoice Invoice = new com.fx.qbo.Invoice();
 
-      Customer customer = new Customer();
-      customer.setDisplayName("bruh");
+      
+      Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-      URIBuilder builder = new URIBuilder() 
-      .setScheme("https")
-      .setHost("sandbox-quickbooks.api.intuit.com")
-      .setPath("/v3/company/" + realmId + "/query")
-      .setParameter("query", "select * from customer where displayname = 'bruh'");
-      String query = builder.toString();      
+      System.out.println(gson.toJson(Invoice));
 
-      HttpClient HTTPClient = HttpClient.newHttpClient();
-      HttpRequest request = HttpRequest.newBuilder()
-          .uri(URI.create(query))
+      HttpClient post = HttpClient.newHttpClient();             // example HttpClient for post request
+      HttpRequest postRequest = HttpRequest.newBuilder()
+          .uri(URI.create(baseURL + "/v3/company/" + realmId + "/invoice/"))
+          // .uri(URI.create("https://sandbox-quickbooks.api.intuit.com/v3/company/4620816365236753060/customer"))
           .header("Authorization", "Bearer " + accessToken)
-          .header("content_type", "application/json")
-          .header("Accept", "application/json")
-          .GET()
+          .header("content-type", "application/json")
+          .header("accept", "application/json")
+          .POST(BodyPublishers.ofString(gson.toJson(Invoice)))
           .build();
-      HTTPClient.sendAsync(request, BodyHandlers.ofString())
+      post.sendAsync(postRequest, BodyHandlers.ofString())
           .thenApply(HttpResponse::body)
           .thenAccept(System.out::println)
           .join();
