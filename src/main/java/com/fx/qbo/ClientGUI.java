@@ -193,6 +193,10 @@ public class ClientGUI {
 				importerLabel.setText("formatting items...");
 				FileHandler handler = new FileHandler(filePath);
 				
+				handler.formatData();
+				// handler.testItems();
+				// handler.createAndPostInvoices();
+				
 
 
 				

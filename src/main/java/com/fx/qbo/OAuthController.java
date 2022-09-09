@@ -29,6 +29,9 @@ import com.intuit.ipp.data.EmailAddress;
 import com.intuit.ipp.data.Header;
 import com.intuit.ipp.data.Invoice;
 import com.intuit.ipp.data.Item;
+import com.intuit.ipp.data.Line;
+import com.intuit.ipp.data.LineDetailTypeEnum;
+import com.intuit.ipp.data.SalesItemLineDetail;
 import com.intuit.ipp.exception.FMSException;
 import com.intuit.ipp.security.OAuth2Authorizer;
 import com.intuit.ipp.services.DataService;
@@ -56,7 +59,10 @@ public class OAuthController {
   private static String accessToken = "";
   private static String refreshToken = "";
   private static String realmId = "";
-  private static String baseURL = "https://sandbox-quickbooks.api.intuit.com";
+  private static String baseURL = "https://sandbox-quickbooks.api.intuit.com/v3/company";
+  private static Context context;
+  private static DataService service;
+  
 
   private OAuth2Config oauth2Config = new OAuth2Config.OAuth2ConfigBuilder(clientId, clientSecret)
       .callDiscoveryAPI(Environment.SANDBOX)
@@ -75,6 +81,7 @@ public class OAuthController {
     scopes.add(Scope.Profile);
 
     url = oauth2Config.prepareUrl(scopes, redirectUri, csrf);
+    Config.setProperty(Config.BASE_URL_QBO, baseURL);
 
   }
 
@@ -84,32 +91,36 @@ public class OAuthController {
       OAuth2PlatformClient client = new OAuth2PlatformClient(oauth2Config);
       BearerTokenResponse bearerTokenResponse = client.retrieveBearerTokens(authCode, redirectUri);
       accessToken = bearerTokenResponse.getAccessToken();
+      Config.setProperty(Config.BASE_URL_QBO, baseURL);
+      OAuth2Authorizer authorizer = new OAuth2Authorizer(accessToken);
 
-      com.fx.qbo.Invoice Invoice = new com.fx.qbo.Invoice();
 
-      
+      context = new Context(authorizer, ServiceType.QBO, realmId);
+
+      service = new DataService(context);
+
+      String sql = "Select * from Customer startposition 1 maxresults 1";
+
+      Customer customer = new Customer();
+
+      customer.setDisplayName("dataservice test");
+
+      // com.fx.qbo.Invoice invoice = new com.fx.qbo.Invoice();
+
       Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-      System.out.println(gson.toJson(Invoice));
+      System.out.println(gson.toJson(customer));
 
-      HttpClient post = HttpClient.newHttpClient();             // example HttpClient for post request
-      HttpRequest postRequest = HttpRequest.newBuilder()
-          .uri(URI.create(baseURL + "/v3/company/" + realmId + "/invoice/"))
-          // .uri(URI.create("https://sandbox-quickbooks.api.intuit.com/v3/company/4620816365236753060/customer"))
-          .header("Authorization", "Bearer " + accessToken)
-          .header("content-type", "application/json")
-          .header("accept", "application/json")
-          .POST(BodyPublishers.ofString(gson.toJson(Invoice)))
-          .build();
-      post.sendAsync(postRequest, BodyHandlers.ofString())
-          .thenApply(HttpResponse::body)
-          .thenAccept(System.out::println)
-          .join();
+      QueryResult queryResult = service.executeQuery(sql);
 
+      System.out.println(queryResult.toString());
 
     } catch (OAuthException e) {
       Popup OAuthException = new Popup("OAuthException", "Error: Invalid OAuth Request");
       OAuthException.setVisible(true);
+      e.printStackTrace();
+    } catch (FMSException e) {
+      // TODO Auto-generated catch block
       e.printStackTrace();
     }
 

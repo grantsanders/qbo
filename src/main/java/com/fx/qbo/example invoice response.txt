@@ -1,0 +1,97 @@
+        "Invoice": [
+            {
+                "AllowIPNPayment": false,
+                "AllowOnlinePayment": false,
+                "AllowOnlineCreditCardPayment": false,
+                "AllowOnlineACHPayment": false,
+                "domain": "QBO",
+                "sparse": false,
+                "Id": "166",
+                "SyncToken": "1",
+                "MetaData": {
+                    "CreateTime": "2022-09-06T08:21:29-07:00",
+                    "LastUpdatedTime": "2022-09-06T08:21:29-07:00"
+                },
+                "CustomField": [
+                    {
+                        "DefinitionId": "1",
+                        "Name": "Crew #",
+                        "Type": "StringType"
+                    }
+                ],
+                "DocNumber": "1055",
+                "TxnDate": "2022-09-06",
+                "CurrencyRef": {
+                    "value": "USD",
+                    "name": "United States Dollar"
+                },
+                "LinkedTxn": [
+                    {
+                        "TxnId": "167",
+                        "TxnType": "Payment"
+                    },
+                    {
+                        "TxnId": "31",
+                        "TxnType": "Payment"
+                    }
+                ],
+                "Line": [
+                    {
+                        "Id": "1",
+                        "LineNum": 1,
+                        "Description": "bruh",
+                        "Amount": 100.00,
+                        "DetailType": "SalesItemLineDetail",
+                        "SalesItemLineDetail": {
+                            "ItemRef": {
+                                "value": "1",
+                                "name": "Services"
+                            },
+                            "ItemAccountRef": {
+                                "value": "1",
+                                "name": "Services"
+                            },
+                            "TaxCodeRef": {
+                                "value": "NON"
+                            }
+                        }
+                    },
+                    {
+                        "Amount": 100.00,
+                        "DetailType": "SubTotalLineDetail",
+                        "SubTotalLineDetail": {}
+                    }
+                ],
+                "TxnTaxDetail": {
+                    "TotalTax": 0
+                },
+                "CustomerRef": {
+                    "value": "1",
+                    "name": "Amy's Bird Sanctuary"
+                },
+                "BillAddr": {
+                    "Id": "2",
+                    "Line1": "4581 Finch St.",
+                    "City": "Bayshore",
+                    "CountrySubDivisionCode": "CA",
+                    "PostalCode": "94326",
+                    "Lat": "INVALID",
+                    "Long": "INVALID"
+                },
+                "ShipAddr": {
+                    "Id": "2",
+                    "Line1": "4581 Finch St.",
+                    "City": "Bayshore",
+                    "CountrySubDivisionCode": "CA",
+                    "PostalCode": "94326",
+                    "Lat": "INVALID",
+                    "Long": "INVALID"
+                },
+                "DueDate": "2022-10-06",
+                "TotalAmt": 100.00,
+                "ApplyTaxAfterDiscount": false,
+                "PrintStatus": "NeedToPrint",
+                "EmailStatus": "NotSet",
+                "Balance": 0
+            }
+        ],
