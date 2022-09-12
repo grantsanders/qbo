@@ -2,43 +2,19 @@ package com.fx.qbo;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.net.http.HttpRequest.BodyPublisher;
-import java.net.http.HttpRequest.BodyPublishers;
-import java.net.http.HttpResponse.BodyHandlers;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.management.Query;
-import javax.swing.text.html.HTMLDocument.Iterator;
-
-import org.apache.commons.codec.binary.StringUtils;
-import org.apache.http.client.utils.URIBuilder;
-import org.springframework.web.util.UriBuilder;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
 import com.intuit.ipp.core.Context;
-import com.intuit.ipp.core.IEntity;
 import com.intuit.ipp.core.ServiceType;
 import com.intuit.ipp.data.Customer;
-import com.intuit.ipp.data.EmailAddress;
-import com.intuit.ipp.data.Entity;
-import com.intuit.ipp.data.Header;
 import com.intuit.ipp.data.Invoice;
 import com.intuit.ipp.data.Item;
 import com.intuit.ipp.data.ItemTypeEnum;
-import com.intuit.ipp.data.Line;
-import com.intuit.ipp.data.LineDetailTypeEnum;
-import com.intuit.ipp.data.SalesItemLineDetail;
 import com.intuit.ipp.exception.FMSException;
 import com.intuit.ipp.security.OAuth2Authorizer;
 import com.intuit.ipp.services.DataService;
-import com.intuit.ipp.services.QueryResult;
 import com.intuit.ipp.util.Config;
 import com.intuit.oauth2.client.OAuth2PlatformClient;
 
@@ -96,6 +72,7 @@ public class OAuthController {
       Config.setProperty(Config.BASE_URL_QBO, baseURL);
       OAuth2Authorizer authorizer = new OAuth2Authorizer(accessToken);
       context = new Context(authorizer, ServiceType.QBO, realmId);
+      context.setMinorVersion("55");
       service = new DataService(context);
 
     } catch (OAuthException e) {
@@ -104,6 +81,7 @@ public class OAuthController {
       e.printStackTrace();
     } catch (FMSException e) {
       Popup FMSException = new Popup("FMSException", "Error: FMS Exception");
+      FMSException.setVisible(true);
       e.printStackTrace();
     }
 
@@ -114,6 +92,7 @@ public class OAuthController {
     Config.setProperty(Config.BASE_URL_QBO, baseURL);
     OAuth2Authorizer authorizer = new OAuth2Authorizer(accessToken);
     context = new Context(authorizer, ServiceType.QBO, realmId);
+    context.setMinorVersion("55");
     service = new DataService(context);
 
     List<Customer> customers = service.findAll(customer);
@@ -138,6 +117,7 @@ public class OAuthController {
         service.add(invoices.get(i));
       } catch (FMSException e) {
         Popup FMSException = new Popup("FMSException", "Error: FMS Exception");
+        FMSException.setVisible(true);
         e.printStackTrace();
       }
 
@@ -149,22 +129,29 @@ public class OAuthController {
     Config.setProperty(Config.BASE_URL_QBO, baseURL);
     OAuth2Authorizer authorizer = new OAuth2Authorizer(accessToken);
     context = new Context(authorizer, ServiceType.QBO, realmId);
+    context.setMinorVersion("55");
     service = new DataService(context);
     List<Item> items = service.findAll(item);
     java.util.Iterator itr = items.iterator();
 
     while (itr.hasNext()) {
       item = (Item) itr.next();
-
+      com.intuit.ipp.data.ReferenceType ref = new com.intuit.ipp.data.ReferenceType();
+      ref.setValue("91");
 
       if (item.getName().equals(name)) {
+        item.setUnitPrice(new BigDecimal(amount));
+        item.setType(ItemTypeEnum.NON_INVENTORY);
+        item.setIncomeAccountRef(ref);
+        service.update(item);
         return item;
       } else {
         item = new Item();
         item.setName(name);
         item.setUnitPrice(new BigDecimal(amount));
         item.setType(ItemTypeEnum.NON_INVENTORY);
-        
+        item.setIncomeAccountRef(ref);
+
       }
     }
     service.add(item);

@@ -1,16 +1,11 @@
 package com.fx.qbo;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Scanner;
-
-import javax.naming.LinkRef;
-
-import org.yaml.snakeyaml.DumperOptions.LineBreak;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -19,12 +14,10 @@ import com.intuit.ipp.data.Invoice;
 import com.intuit.ipp.data.Item;
 import com.intuit.ipp.data.Line;
 import com.intuit.ipp.data.LineDetailTypeEnum;
-import com.intuit.ipp.data.PhysicalAddress;
 import com.intuit.ipp.data.ReferenceType;
 import com.intuit.ipp.data.SalesItemLineDetail;
 import com.intuit.ipp.data.TaxLineDetail;
 import com.intuit.ipp.exception.FMSException;
-import com.intuit.ipp.services.DataService;
 import com.intuit.oauth2.exception.OAuthException;
 
 public class FileHandler {
@@ -50,12 +43,10 @@ public class FileHandler {
             Scanner in = new Scanner(input);
             in.nextLine();
             ArrayList<String[]> baseItems = new ArrayList<String[]>();
-
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
             while (in.hasNext()) {
                 String line = in.nextLine();
-
                 String[] split = line.split("\",\"");
                 split[0] = split[0].replace("\"", "");
                 baseItems.add(split);
@@ -78,8 +69,8 @@ public class FileHandler {
                     lineList.add(newLine);
 
                 } else {
-
-                    createNewInvoices(lineList, currentArray[3]);
+                    String[] pastArray = baseItems.get(i - 1);
+                    createNewInvoices(lineList, pastArray[3]);
                     invoiceCounter++;
                     Line newLine = createLineItem(currentArray);
                     lineList.add(newLine);
@@ -88,31 +79,28 @@ public class FileHandler {
                 }
             }
             createNewInvoices(lineList, currentArray[3]);
-
-            // System.out.println(gson.toJson(finalInvoiceList));
-
+            System.out.println(gson.toJson(finalInvoiceList));
             auth.postInvoices(finalInvoiceList);
+            System.out.println("Created " + invoiceCounter + " invoices");
 
         } catch (FileNotFoundException e) {
             Popup FileNotFoundException = new Popup("FileNotFoundException", "Error: File not found");
+            FileNotFoundException.setVisible(true);
         }
     }
 
     public Line createLineItem(String[] data) {
 
-        // for (int i = 0; i < data.length; i++) {
-        // System.out.println(i + " " + data[i]);
-        // }
-
         Line lineItem = new Line();
         SalesItemLineDetail detail = new SalesItemLineDetail();
         TaxLineDetail tax = new TaxLineDetail();
         ReferenceType ref = new ReferenceType();
-
+        BigDecimal rate;
         try {
             Item item = auth.getItem(data[30], Double.parseDouble(data[31]));
             ref.setValue(item.getId());
             ref.setName(item.getName());
+            rate = item.getUnitPrice();
         } catch (FMSException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -124,22 +112,23 @@ public class FileHandler {
 
         // detail.setQty(new BigDecimal(Double.parseDouble(data[29])));
 
-
         // httprequest for item ref query
 
         // if item is found lineItem.setId(value from query)
         // else, specify no id and let qbo create it automatically
 
         detail.setItemRef(ref);
-        
+        detail.setQty(new BigDecimal(Double.parseDouble(data[29])));
+        detail.setUnitPrice(new BigDecimal(Double.parseDouble(data[31])));
 
         lineItem.setDetailType(LineDetailTypeEnum.SALES_ITEM_LINE_DETAIL);
         lineItem.setSalesItemLineDetail(detail);
         lineItem.setTaxLineDetail(tax);
 
         lineItem.setDescription(data[30]);
-        lineItem.setAmount(new BigDecimal(Double.parseDouble(data[29])));
-        
+
+        BigDecimal totalAmount = new BigDecimal((Double.parseDouble(data[29]) * Double.parseDouble(data[31])));
+        lineItem.setAmount(totalAmount);
 
         // set line fields
         // customer = data.get(3);
@@ -172,17 +161,15 @@ public class FileHandler {
         customer = auth.getCustomer(customerName);
         ArrayList<Line> finalLineList = new ArrayList<Line>(lineList);
 
-        ref.setValue(customer.getId());
-        ref.setName(customerName);
-
         newInvoice.setLine(finalLineList);
         newInvoice.setCustomerRef(ref);
+        ref.setValue(customer.getId());
+        ref.setName(customerName);
 
         finalInvoiceList.add(newInvoice);
 
         lineList.clear();
 
     }
-
 
 }

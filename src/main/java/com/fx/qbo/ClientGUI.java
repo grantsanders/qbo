@@ -10,8 +10,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.IOException;
 
-import com.google.gson.Gson;
-import com.intuit.ipp.data.Customer;
 import com.intuit.ipp.exception.FMSException;
 import com.intuit.oauth2.exception.InvalidRequestException;
 import com.intuit.oauth2.exception.OAuthException;
@@ -203,7 +201,6 @@ public class ClientGUI {
 					OAuthException.setVisible(true);
 					e1.printStackTrace();
 				} catch (FMSException e1) {
-					Popup FMSException = new Popup("FMSException", "Error: FMS Exception");
 					e1.printStackTrace();
 				}
 				// handler.formatData();
