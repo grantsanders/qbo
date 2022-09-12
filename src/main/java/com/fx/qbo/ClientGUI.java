@@ -10,6 +10,9 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.IOException;
 
+import com.google.gson.Gson;
+import com.intuit.ipp.data.Customer;
+import com.intuit.ipp.exception.FMSException;
 import com.intuit.oauth2.exception.InvalidRequestException;
 import com.intuit.oauth2.exception.OAuthException;
 
@@ -189,17 +192,23 @@ public class ClientGUI {
 				importerLabel.setText("does that look like a csv to you??");
 			} else {
 				importerLabel.setText("Authenticating...");
-				auth.getTokens();
+				auth.getServiceHandler();
 				importerLabel.setText("formatting items...");
-				FileHandler handler = new FileHandler(filePath);
-				
-				handler.formatData();
+				FileHandler handler = new FileHandler(filePath, auth);
+
+				try {
+					handler.formatData();
+				} catch (OAuthException e1) {
+					Popup OAuthException = new Popup("OAuthException", "Error: Invalid OAuth Request");
+					OAuthException.setVisible(true);
+					e1.printStackTrace();
+				} catch (FMSException e1) {
+					Popup FMSException = new Popup("FMSException", "Error: FMS Exception");
+					e1.printStackTrace();
+				}
+				// handler.formatData();
 				// handler.testItems();
 				// handler.createAndPostInvoices();
-				
-
-
-				
 
 			}
 		});

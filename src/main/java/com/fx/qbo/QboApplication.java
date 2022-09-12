@@ -12,15 +12,15 @@ import com.intuit.ipp.data.Line;
 public class QboApplication {
 
 	public static void main(String[] args) {
-		FileHandler handler = new FileHandler("bruh");
+		// FileHandler handler = new FileHandler("bruh");
 
-		handler.formatData();
+		// handler.formatData();
 
 
 		
 
-		// ClientGUI main = new ClientGUI();
+		ClientGUI main = new ClientGUI();
 		
-		// SpringApplication.run(QboApplication.class, args);
+		SpringApplication.run(QboApplication.class, args);
 	}
 }

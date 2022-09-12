@@ -23,12 +23,15 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.intuit.ipp.core.Context;
+import com.intuit.ipp.core.IEntity;
 import com.intuit.ipp.core.ServiceType;
 import com.intuit.ipp.data.Customer;
 import com.intuit.ipp.data.EmailAddress;
+import com.intuit.ipp.data.Entity;
 import com.intuit.ipp.data.Header;
 import com.intuit.ipp.data.Invoice;
 import com.intuit.ipp.data.Item;
+import com.intuit.ipp.data.ItemTypeEnum;
 import com.intuit.ipp.data.Line;
 import com.intuit.ipp.data.LineDetailTypeEnum;
 import com.intuit.ipp.data.SalesItemLineDetail;
@@ -62,7 +65,6 @@ public class OAuthController {
   private static String baseURL = "https://sandbox-quickbooks.api.intuit.com/v3/company";
   private static Context context;
   private static DataService service;
-  
 
   private OAuth2Config oauth2Config = new OAuth2Config.OAuth2ConfigBuilder(clientId, clientSecret)
       .callDiscoveryAPI(Environment.SANDBOX)
@@ -85,7 +87,7 @@ public class OAuthController {
 
   }
 
-  public void getTokens() {
+  public void getServiceHandler() {
 
     try {
       OAuth2PlatformClient client = new OAuth2PlatformClient(oauth2Config);
@@ -93,37 +95,80 @@ public class OAuthController {
       accessToken = bearerTokenResponse.getAccessToken();
       Config.setProperty(Config.BASE_URL_QBO, baseURL);
       OAuth2Authorizer authorizer = new OAuth2Authorizer(accessToken);
-
-
       context = new Context(authorizer, ServiceType.QBO, realmId);
-
       service = new DataService(context);
-
-      String sql = "Select * from Customer startposition 1 maxresults 1";
-
-      Customer customer = new Customer();
-
-      customer.setDisplayName("dataservice test");
-
-      // com.fx.qbo.Invoice invoice = new com.fx.qbo.Invoice();
-
-      Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
-      System.out.println(gson.toJson(customer));
-
-      QueryResult queryResult = service.executeQuery(sql);
-
-      System.out.println(queryResult.toString());
 
     } catch (OAuthException e) {
       Popup OAuthException = new Popup("OAuthException", "Error: Invalid OAuth Request");
       OAuthException.setVisible(true);
       e.printStackTrace();
     } catch (FMSException e) {
-      // TODO Auto-generated catch block
+      Popup FMSException = new Popup("FMSException", "Error: FMS Exception");
       e.printStackTrace();
     }
 
+  }
+
+  public Customer getCustomer(String name) throws FMSException, OAuthException {
+    Customer customer = new Customer();
+    Config.setProperty(Config.BASE_URL_QBO, baseURL);
+    OAuth2Authorizer authorizer = new OAuth2Authorizer(accessToken);
+    context = new Context(authorizer, ServiceType.QBO, realmId);
+    service = new DataService(context);
+
+    List<Customer> customers = service.findAll(customer);
+    java.util.Iterator itr = customers.iterator();
+
+    while (itr.hasNext()) {
+      customer = (Customer) itr.next();
+      if (customer.getDisplayName().equals(name)) {
+        return customer;
+      } else {
+        customer = new Customer();
+        customer.setDisplayName(name);
+      }
+    }
+    service.add(customer);
+    return customer;
+  }
+
+  public void postInvoices(ArrayList<Invoice> invoices) {
+    for (int i = 0; i < invoices.size(); i++) {
+      try {
+        service.add(invoices.get(i));
+      } catch (FMSException e) {
+        Popup FMSException = new Popup("FMSException", "Error: FMS Exception");
+        e.printStackTrace();
+      }
+
+    }
+  }
+
+  public Item getItem(String name, double amount) throws FMSException {
+    Item item = new Item();
+    Config.setProperty(Config.BASE_URL_QBO, baseURL);
+    OAuth2Authorizer authorizer = new OAuth2Authorizer(accessToken);
+    context = new Context(authorizer, ServiceType.QBO, realmId);
+    service = new DataService(context);
+    List<Item> items = service.findAll(item);
+    java.util.Iterator itr = items.iterator();
+
+    while (itr.hasNext()) {
+      item = (Item) itr.next();
+
+
+      if (item.getName().equals(name)) {
+        return item;
+      } else {
+        item = new Item();
+        item.setName(name);
+        item.setUnitPrice(new BigDecimal(amount));
+        item.setType(ItemTypeEnum.NON_INVENTORY);
+        
+      }
+    }
+    service.add(item);
+    return item;
   }
 
   public void setAuthCode(String code) {

@@ -1,26 +1,26 @@
-package com.fx.qbo;
+// package com.fx.qbo;
 
-import java.util.ArrayList;
+// import java.util.ArrayList;
 
-import com.intuit.ipp.data.Line;
+// import com.intuit.ipp.data.Line;
 
-public class Invoice {
-    CustomerRef CustomerRef = new CustomerRef();
-    ArrayList<Line> Line = new ArrayList<Line>();
+// public class Invoice {
+//     CustomerRef CustomerRef = new CustomerRef();
+//     ArrayList<Line> Line = new ArrayList<Line>();
 
-    public Invoice() {
-    }
+//     public Invoice() {
+//     }
 
-    class CustomerRef {
-        public CustomerRef() {
-        }
+//     class CustomerRef {
+//         public CustomerRef() {
+//         }
 
-        private String value = "";
-        private String name = "";
-    }
+//         private String value = "";
+//         private String name = "";
+//     }
 
-    public void addLineToInvoice (Line newLine) {
-        Line.add(newLine);
-    }
+//     public void addLineToInvoice (Line newLine) {
+//         Line.add(newLine);
+//     }
 
-}
+// }

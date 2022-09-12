@@ -10,24 +10,40 @@ import java.util.Scanner;
 
 import javax.naming.LinkRef;
 
+import org.yaml.snakeyaml.DumperOptions.LineBreak;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.intuit.ipp.data.Customer;
 import com.intuit.ipp.data.Invoice;
+import com.intuit.ipp.data.Item;
 import com.intuit.ipp.data.Line;
+import com.intuit.ipp.data.LineDetailTypeEnum;
+import com.intuit.ipp.data.PhysicalAddress;
+import com.intuit.ipp.data.ReferenceType;
+import com.intuit.ipp.data.SalesItemLineDetail;
+import com.intuit.ipp.data.TaxLineDetail;
+import com.intuit.ipp.exception.FMSException;
+import com.intuit.ipp.services.DataService;
+import com.intuit.oauth2.exception.OAuthException;
 
 public class FileHandler {
 
     private String path;
-    private ArrayList<Line> lineList = new ArrayList<Line>();
+    // private ArrayList<Line> lineList = new ArrayList<Line>();
     private ArrayList<Invoice> finalInvoiceList = new ArrayList<Invoice>();
     private int refNumber;
     private int refPrevious;
+    public static OAuthController auth;
 
-    public FileHandler(String filePath) {
-        path = "/Users/grantsanders/Downloads/BlueCartAccounting Report_09092022_0633pm.csv";
+    ArrayList<Line> lineList = new ArrayList<Line>();
+
+    public FileHandler(String filePath, OAuthController authController) {
+        path = filePath;
+        auth = authController;
     }
 
-    public void formatData() { // run filepath and pull data from CSV to be stored
+    public void formatData() throws OAuthException, FMSException { // run filepath and pull data from CSV to be stored
         try {
             File inFile = new File(path);
             FileReader input = new FileReader(inFile);
@@ -39,8 +55,9 @@ public class FileHandler {
 
             while (in.hasNext()) {
                 String line = in.nextLine();
-                line = line.replace("\"", "");
-                String[] split = line.split(",");
+
+                String[] split = line.split("\",\"");
+                split[0] = split[0].replace("\"", "");
                 baseItems.add(split);
             }
 
@@ -52,36 +69,79 @@ public class FileHandler {
             for (int i = 0; i < baseItems.size(); i++) {
                 currentArray = baseItems.get(i);
                 refNumber = Integer.parseInt(currentArray[0]);
-
                 if (refNumber == refPrevious) {
-                    System.out.println(i + " " + refNumber + " invoice # " + invoiceCounter);
 
                     Line newLine = createLineItem(currentArray);
+                    // System.out.println(i + " " + refNumber + " invoice # " + invoiceCounter);
 
+                    // System.out.println(gson.toJson(newLine));
                     lineList.add(newLine);
 
-                    refPrevious = refNumber;
                 } else {
-                    createNewInvoice(lineList);
+
+                    createNewInvoices(lineList, currentArray[3]);
                     invoiceCounter++;
+                    Line newLine = createLineItem(currentArray);
+                    lineList.add(newLine);
+                    refPrevious = Integer.parseInt(currentArray[0]);
+
                 }
-            System.out.println(gson.toJson(lineList));
-
             }
+            createNewInvoices(lineList, currentArray[3]);
 
-        } catch (
+            // System.out.println(gson.toJson(finalInvoiceList));
 
-        FileNotFoundException e) {
+            auth.postInvoices(finalInvoiceList);
+
+        } catch (FileNotFoundException e) {
             Popup FileNotFoundException = new Popup("FileNotFoundException", "Error: File not found");
         }
     }
 
     public Line createLineItem(String[] data) {
 
-        Line lineItem = new Line();
-        lineItem.setAmount(new BigDecimal(100));
-        // set line fields
+        // for (int i = 0; i < data.length; i++) {
+        // System.out.println(i + " " + data[i]);
+        // }
 
+        Line lineItem = new Line();
+        SalesItemLineDetail detail = new SalesItemLineDetail();
+        TaxLineDetail tax = new TaxLineDetail();
+        ReferenceType ref = new ReferenceType();
+
+        try {
+            Item item = auth.getItem(data[30], Double.parseDouble(data[31]));
+            ref.setValue(item.getId());
+            ref.setName(item.getName());
+        } catch (FMSException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        tax.setNetAmountTaxable(new BigDecimal(0));
+        tax.setTaxPercent(new BigDecimal(0));
+        ref.setName(data[27]);
+
+        // detail.setQty(new BigDecimal(Double.parseDouble(data[29])));
+
+
+        // httprequest for item ref query
+
+        // if item is found lineItem.setId(value from query)
+        // else, specify no id and let qbo create it automatically
+
+        detail.setItemRef(ref);
+        
+
+        lineItem.setDetailType(LineDetailTypeEnum.SALES_ITEM_LINE_DETAIL);
+        lineItem.setSalesItemLineDetail(detail);
+        lineItem.setTaxLineDetail(tax);
+
+        lineItem.setDescription(data[30]);
+        lineItem.setAmount(new BigDecimal(Double.parseDouble(data[29])));
+        
+
+        // set line fields
         // customer = data.get(3);
         // billingAddress = data.get(8);
         // billCity = data.get(11);
@@ -104,12 +164,25 @@ public class FileHandler {
         return lineItem;
     }
 
-    public void createNewInvoice(ArrayList<Line> lineList) {
+    public void createNewInvoices(ArrayList<Line> lineList, String customerName) throws OAuthException, FMSException {
+
         Invoice newInvoice = new Invoice();
+        ReferenceType ref = new ReferenceType();
+        Customer customer = new Customer();
+        customer = auth.getCustomer(customerName);
+        ArrayList<Line> finalLineList = new ArrayList<Line>(lineList);
+
+        ref.setValue(customer.getId());
+        ref.setName(customerName);
+
+        newInvoice.setLine(finalLineList);
+        newInvoice.setCustomerRef(ref);
+
         finalInvoiceList.add(newInvoice);
+
+        lineList.clear();
+
     }
 
-    public void flush() {
-        lineList.clear();
-    }
+
 }
