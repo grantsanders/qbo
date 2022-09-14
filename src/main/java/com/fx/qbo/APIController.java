@@ -132,6 +132,50 @@ public class APIController {
     }
   }
 
+  public Item createNewItem(Item item) {
+    try {
+
+      service.add(item);
+
+    } catch (FMSException e) {
+
+      Popup FMSException = new Popup("FMSException", "Error: FMS Exception");
+      FMSException.setVisible(true);
+      e.printStackTrace();
+
+    }
+
+    return item;
+  }
+
+  public Item updateItem(Item item) {
+    item.setSparse(true);
+    try {
+      item.setSparse(true);
+      item = service.update(item);
+    } catch (FMSException e) {
+
+      e.printStackTrace();
+    }
+    return item;
+  }
+
+  public List<Item> getItemList() {
+    Item item = new Item();
+
+    List<Item> items;
+    try {
+      items = service.findAll(item);
+      return items;
+
+    } catch (FMSException e) {
+      e.printStackTrace();
+    }
+
+    // if somehow this fails
+    return null;
+  }
+
   public Item getItem(String name, double amount) throws FMSException {
 
     Item item = new Item();

@@ -7,19 +7,24 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Scanner;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.intuit.ipp.data.BatchItemRequest;
 import com.intuit.ipp.data.Customer;
 import com.intuit.ipp.data.Invoice;
 import com.intuit.ipp.data.Item;
+import com.intuit.ipp.data.ItemTypeEnum;
 import com.intuit.ipp.data.Line;
 import com.intuit.ipp.data.LineDetailTypeEnum;
 import com.intuit.ipp.data.ReferenceType;
 import com.intuit.ipp.data.SalesItemLineDetail;
 import com.intuit.ipp.data.TaxLineDetail;
 import com.intuit.ipp.exception.FMSException;
+import com.intuit.ipp.serialization.BatchItemRequestSerializer;
 import com.intuit.oauth2.exception.OAuthException;
 
 public class FileHandler {
@@ -30,11 +35,12 @@ public class FileHandler {
     private int refNumber;
     private int refPrevious;
     public static APIController api;
+    Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     ArrayList<Line> lineList = new ArrayList<Line>();
 
     public FileHandler() {
-        
+
     }
 
     public FileHandler(String filePath, APIController apiController) {
@@ -43,6 +49,8 @@ public class FileHandler {
     }
 
     public int formatData() throws OAuthException, FMSException {
+
+        List<Item> items = api.getItemList();
 
         int invoiceCounter = 0;
 
@@ -53,7 +61,7 @@ public class FileHandler {
             Scanner in = new Scanner(input);
             in.nextLine();
             ArrayList<String[]> baseItems = new ArrayList<String[]>();
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            // Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
             while (in.hasNext()) {
 
@@ -76,10 +84,11 @@ public class FileHandler {
 
                 if (refNumber == refPrevious) {
 
-                    Line newLine = createLineItem(currentArray);
+                    Line newLine = createLineItem(currentArray, items);
                     // System.out.println(i + " " + refNumber + " invoice # " + invoiceCounter);
 
                     // System.out.println(gson.toJson(newLine));
+
                     lineList.add(newLine);
 
                 } else {
@@ -87,7 +96,7 @@ public class FileHandler {
                     String[] pastArray = baseItems.get(i - 1);
                     createNewInvoices(lineList, pastArray[3]);
                     invoiceCounter++;
-                    Line newLine = createLineItem(currentArray);
+                    Line newLine = createLineItem(currentArray, items);
                     lineList.add(newLine);
                     refPrevious = Integer.parseInt(currentArray[0]);
 
@@ -112,37 +121,50 @@ public class FileHandler {
         return invoiceCounter;
     }
 
-    public Line createLineItem(String[] data) {
+    public Item itemLocator(List<Item> existingItemsList, String name, double unitPrice) {
+        Item csvItem = new Item();
+        Item existingItem = new Item();
+        Iterator itr = existingItemsList.iterator();
+        ReferenceType itemRef = new ReferenceType();
+        itemRef.setValue("91");
+
+        while (itr.hasNext()) {
+
+            existingItem = (Item) itr.next();
+
+            if (existingItem.getName().equals(name)) { // check to see if item update is necessary
+
+                if (existingItem.getUnitPrice() == new BigDecimal(unitPrice)) {
+                    return existingItem;
+                } else {
+                    return api.updateItem(existingItem);
+                }
+            }
+        } // if item does not exist in item list, create new one
+
+        csvItem = new Item();
+        csvItem.setName(name);
+        csvItem.setType(ItemTypeEnum.NON_INVENTORY);
+        csvItem.setIncomeAccountRef(itemRef);
+        existingItemsList.add(csvItem);
+
+        return api.createNewItem(csvItem);
+    }
+
+    public Line createLineItem(String[] data, List<Item> items) {
 
         Line lineItem = new Line();
         SalesItemLineDetail detail = new SalesItemLineDetail();
         TaxLineDetail tax = new TaxLineDetail();
         ReferenceType ref = new ReferenceType();
         BigDecimal rate;
+        String name = data[30];
+        Double unitPrice = Double.parseDouble(data[31]);
 
-        try {
-
-            Item item = api.getItem(data[30], Double.parseDouble(data[31]));
-            ref.setValue(item.getId());
-            ref.setName(item.getName());
-            rate = item.getUnitPrice();
-
-        } catch (FMSException e) {
-            Popup FMSException = new Popup("FMSException", "Error: FMS Exception");
-            FMSException.setVisible(true);
-            e.printStackTrace();
-        }
-
-        tax.setNetAmountTaxable(new BigDecimal(0));
-        tax.setTaxPercent(new BigDecimal(0));
-        ref.setName(data[27]);
-
-        // detail.setQty(new BigDecimal(Double.parseDouble(data[29])));
-
-        // httprequest for item ref query
-
-        // if item is found lineItem.setId(value from query)
-        // else, specify no id and let qbo create it automatically
+        Item item = itemLocator(items, name, unitPrice);
+        ref.setValue(item.getId());
+        ref.setName(item.getName());
+        rate = item.getUnitPrice();
 
         detail.setItemRef(ref);
         detail.setQty(new BigDecimal(Double.parseDouble(data[29])));
@@ -152,12 +174,10 @@ public class FileHandler {
         lineItem.setSalesItemLineDetail(detail);
         lineItem.setTaxLineDetail(tax);
 
-        lineItem.setDescription(data[30]);
-
         BigDecimal totalAmount = new BigDecimal((Double.parseDouble(data[29]) * Double.parseDouble(data[31])));
         lineItem.setAmount(totalAmount);
 
-        // set line fields
+        // line fields
         // customer = data.get(3);
         // billingAddress = data.get(8);
         // billCity = data.get(11);
