@@ -50,7 +50,8 @@ public class FileHandler {
 
     public int formatData() throws OAuthException, FMSException {
 
-        List<Item> items = api.getItemList();
+        List<Item> workingItemList = api.getItemList();
+        List<Customer> workingCustomerList = api.getCustomerList();
 
         int invoiceCounter = 0;
 
@@ -84,7 +85,7 @@ public class FileHandler {
 
                 if (refNumber == refPrevious) {
 
-                    Line newLine = createLineItem(currentArray, items);
+                    Line newLine = createLineItem(currentArray, workingItemList);
                     // System.out.println(i + " " + refNumber + " invoice # " + invoiceCounter);
 
                     // System.out.println(gson.toJson(newLine));
@@ -94,16 +95,16 @@ public class FileHandler {
                 } else {
 
                     String[] pastArray = baseItems.get(i - 1);
-                    createNewInvoices(lineList, pastArray[3]);
+                    createNewInvoices(lineList, pastArray[3], workingCustomerList);
                     invoiceCounter++;
-                    Line newLine = createLineItem(currentArray, items);
+                    Line newLine = createLineItem(currentArray, workingItemList);
                     lineList.add(newLine);
                     refPrevious = Integer.parseInt(currentArray[0]);
 
                 }
             }
 
-            createNewInvoices(lineList, currentArray[3]);
+            createNewInvoices(lineList, currentArray[3], workingCustomerList);
 
             System.out.println(gson.toJson(finalInvoiceList));
 
@@ -140,15 +141,39 @@ public class FileHandler {
                     return api.updateItem(existingItem);
                 }
             }
-        } // if item does not exist in item list, create new one
+        } // if item does not exist in item list, create new object
 
         csvItem = new Item();
+
         csvItem.setName(name);
         csvItem.setType(ItemTypeEnum.NON_INVENTORY);
         csvItem.setIncomeAccountRef(itemRef);
         existingItemsList.add(csvItem);
 
         return api.createNewItem(csvItem);
+    }
+
+    public Customer customerLocator(List<Customer> workingCustomerList, String name) {
+
+        Customer csvCustomer = new Customer();
+        csvCustomer.setDisplayName(name);
+        Customer existingCustomer;
+
+        java.util.Iterator itr = workingCustomerList.iterator();
+
+        while (itr.hasNext()) {
+
+            existingCustomer = (Customer) itr.next();
+
+            if (csvCustomer.getDisplayName().equals(name)) {
+
+                return existingCustomer;
+
+            }
+
+        } // if customer does not exist in customer list, create new object
+
+        return api.createNewCustomer(csvCustomer);
     }
 
     public Line createLineItem(String[] data, List<Item> items) {
@@ -200,24 +225,16 @@ public class FileHandler {
         return lineItem;
     }
 
-    public void createNewInvoices(ArrayList<Line> lineList, String customerName) throws OAuthException, FMSException {
+    public void createNewInvoices(ArrayList<Line> lineList, String customerName, List<Customer> workingCustomerList)
+            throws OAuthException, FMSException {
 
         ReferenceType ref = new ReferenceType();
         Invoice newInvoice = new Invoice();
         ArrayList<Line> finalLineList = new ArrayList<Line>(lineList);
 
-        Customer customer = api.getCustomer(customerName);
-        System.out.println(customerName);
-        // if (customerName.equals("Bold Bean Jax Beach") || customerName.equals("Bold
-        // Bean Riverside")) {
-        // Line discount = new Line();
-        // DiscountLineDetail discountRef = new DiscountLineDetail();
-        // discountRef.setDiscountPercent(new BigDecimal("15"));
-        // discount.setDetailType(LineDetailTypeEnum.DISCOUNT_LINE_DETAIL);
-        // discount.setDiscountLineDetail(discountRef);
+        Customer customer = customerLocator(workingCustomerList, customerName);
 
-        // finalLineList.add(discount);
-        // }
+        System.out.println(customerName);
 
         Collections.sort(finalLineList, new Comparator<Line>() {
             @Override

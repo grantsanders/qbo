@@ -87,31 +87,29 @@ public class APIController {
 
   }
 
-  public Customer getCustomer(String name) throws FMSException, OAuthException {
+  public List<Customer> getCustomerList() {
     Customer customer = new Customer();
+    List<Customer> workingCustomersList = null;
+    try {
+      workingCustomersList = service.findAll(customer);
+    } catch (FMSException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    return workingCustomersList;
 
-    List<Customer> customers = service.findAll(customer);
-    java.util.Iterator itr = customers.iterator();
+  }
 
-    while (itr.hasNext()) {
+  public Customer createNewCustomer (Customer newCustomer) {
 
-      customer = (Customer) itr.next();
-
-      if (customer.getDisplayName().equals(name)) {
-
-        return customer;
-
-      } else {
-
-        customer = new Customer();
-        customer.setDisplayName(name);
-
-      }
+    try {
+      service.add(newCustomer);
+    } catch (FMSException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
     }
 
-    service.add(customer);
-    return customer;
-
+    return newCustomer;
   }
 
   public void postInvoices(ArrayList<Invoice> invoices) {
@@ -144,7 +142,6 @@ public class APIController {
       e.printStackTrace();
 
     }
-
     return item;
   }
 
@@ -174,41 +171,6 @@ public class APIController {
 
     // if somehow this fails
     return null;
-  }
-
-  public Item getItem(String name, double amount) throws FMSException {
-
-    Item item = new Item();
-    List<Item> items = service.findAll(item);
-    java.util.Iterator itr = items.iterator();
-
-    while (itr.hasNext()) {
-      item = (Item) itr.next();
-      com.intuit.ipp.data.ReferenceType ref = new com.intuit.ipp.data.ReferenceType();
-      ref.setValue("91");
-
-      if (item.getName().equals(name)) {
-
-        item.setUnitPrice(new BigDecimal(amount));
-        item.setType(ItemTypeEnum.NON_INVENTORY);
-        item.setIncomeAccountRef(ref);
-        service.update(item);
-        return item;
-
-      } else {
-
-        item = new Item();
-        item.setName(name);
-        item.setUnitPrice(new BigDecimal(amount));
-        item.setType(ItemTypeEnum.NON_INVENTORY);
-        item.setIncomeAccountRef(ref);
-
-      }
-    }
-
-    service.add(item);
-    return item;
-
   }
 
   public void setAuthCode(String code) {
