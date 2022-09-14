@@ -26,14 +26,13 @@ public class ClientGUI {
 
 	public ClientGUI() {
 		buildConnectPanel();
-
 	}
 
 	private static JFrame frame = new JFrame("beansquad importer");
 	private final static String homeDirectory = System.getProperty("user.home");
 	private static String authCode = "";
 	private static String realmId = "";
-	public static OAuthController auth = new OAuthController();
+	public static APIController api = new APIController();
 	private static String filePath = "";
 	private static String fileName = "";
 
@@ -55,7 +54,7 @@ public class ClientGUI {
 
 		connectButton.addActionListener(e -> {
 			try {
-				auth.setOAuthUrl();
+				api.setOAuthUrl();
 			} catch (InvalidRequestException e1) {
 				Popup invalidRequest = new Popup("InvalidRequestException", "Error: Invalid Request");
 				invalidRequest.setVisible(true);
@@ -83,8 +82,8 @@ public class ClientGUI {
 		browser.addWindowListener(new java.awt.event.WindowAdapter() {
 			@Override
 			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-				auth.setAuthCode(authCode);
-				auth.setRealmId(realmId);
+				api.setAuthCode(authCode);
+				api.setRealmId(realmId);
 				buildUserPlatform();
 			}
 		});
@@ -120,7 +119,7 @@ public class ClientGUI {
 		WebEngine authBrowser = view.getEngine();
 		Group root = new Group();
 		Scene scene = new Scene(root);
-		authBrowser.load(auth.getUrl());
+		authBrowser.load(api.getUrl());
 
 		authBrowser.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
 			if (Worker.State.SUCCEEDED.equals(newValue)) {
@@ -184,18 +183,20 @@ public class ClientGUI {
 
 		importerButton.addActionListener(e -> {
 
-			auth.setAuthCode(authCode);
+			api.setAuthCode(authCode);
+			importerLabel.setText("Formatting and posting invoices...");
 
 			if ((fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length()).equals("csv")) == false) {
 				importerLabel.setText("does that look like a csv to you??");
 			} else {
-				importerLabel.setText("Authenticating...");
-				auth.getServiceHandler();
-				importerLabel.setText("formatting items...");
-				FileHandler handler = new FileHandler(filePath, auth);
+				api.getServiceHandler();
+				FileHandler handler = new FileHandler(filePath, api);
 
 				try {
-					handler.formatData();
+					int invoiceCounter = handler.formatData();
+					if (invoiceCounter == 1) {importerLabel.setText("Done- created " + invoiceCounter + " invoice");}
+					else {importerLabel.setText("Done- created " + invoiceCounter + " invoices");}
+					
 				} catch (OAuthException e1) {
 					Popup OAuthException = new Popup("OAuthException", "Error: Invalid OAuth Request");
 					OAuthException.setVisible(true);
