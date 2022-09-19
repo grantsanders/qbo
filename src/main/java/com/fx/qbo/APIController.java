@@ -1,7 +1,7 @@
 package com.fx.qbo;
 
 import java.io.IOException;
-import java.math.BigDecimal;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,6 @@ import com.intuit.ipp.core.ServiceType;
 import com.intuit.ipp.data.Customer;
 import com.intuit.ipp.data.Invoice;
 import com.intuit.ipp.data.Item;
-import com.intuit.ipp.data.ItemTypeEnum;
 import com.intuit.ipp.exception.FMSException;
 import com.intuit.ipp.security.OAuth2Authorizer;
 import com.intuit.ipp.services.DataService;

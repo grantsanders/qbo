@@ -15,29 +15,30 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.intuit.ipp.data.BatchItemRequest;
 import com.intuit.ipp.data.Customer;
+import com.intuit.ipp.data.DiscountLineDetail;
 import com.intuit.ipp.data.Invoice;
 import com.intuit.ipp.data.Item;
 import com.intuit.ipp.data.ItemTypeEnum;
 import com.intuit.ipp.data.Line;
 import com.intuit.ipp.data.LineDetailTypeEnum;
+import com.intuit.ipp.data.PhysicalAddress;
 import com.intuit.ipp.data.ReferenceType;
 import com.intuit.ipp.data.SalesItemLineDetail;
 import com.intuit.ipp.data.TaxLineDetail;
 import com.intuit.ipp.exception.FMSException;
 import com.intuit.ipp.serialization.BatchItemRequestSerializer;
+import com.intuit.oauth2.data.Address;
 import com.intuit.oauth2.exception.OAuthException;
 
 public class FileHandler {
 
     private String path;
-    // private ArrayList<Line> lineList = new ArrayList<Line>();
     private ArrayList<Invoice> finalInvoiceList = new ArrayList<Invoice>();
     private int refNumber;
     private int refPrevious;
     public static APIController api;
-    Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
     ArrayList<Line> lineList = new ArrayList<Line>();
+    Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     public FileHandler() {
 
@@ -62,7 +63,6 @@ public class FileHandler {
             Scanner in = new Scanner(input);
             in.nextLine();
             ArrayList<String[]> baseItems = new ArrayList<String[]>();
-            // Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
             while (in.hasNext()) {
 
@@ -86,16 +86,13 @@ public class FileHandler {
                 if (refNumber == refPrevious) {
 
                     Line newLine = createLineItem(currentArray, workingItemList);
-                    // System.out.println(i + " " + refNumber + " invoice # " + invoiceCounter);
-
-                    // System.out.println(gson.toJson(newLine));
 
                     lineList.add(newLine);
 
                 } else {
 
                     String[] pastArray = baseItems.get(i - 1);
-                    createNewInvoices(lineList, pastArray[3], workingCustomerList);
+                    createNewInvoices(lineList, pastArray, workingCustomerList);
                     invoiceCounter++;
                     Line newLine = createLineItem(currentArray, workingItemList);
                     lineList.add(newLine);
@@ -104,7 +101,7 @@ public class FileHandler {
                 }
             }
 
-            createNewInvoices(lineList, currentArray[3], workingCustomerList);
+            createNewInvoices(lineList, currentArray, workingCustomerList);
 
             System.out.println(gson.toJson(finalInvoiceList));
 
@@ -135,11 +132,8 @@ public class FileHandler {
 
             if (existingItem.getName().equals(name)) { // check to see if item update is necessary
 
-                if (existingItem.getUnitPrice() == new BigDecimal(unitPrice)) {
-                    return existingItem;
-                } else {
-                    return api.updateItem(existingItem);
-                }
+                existingItem.setUnitPrice(new BigDecimal(unitPrice));
+                return existingItem;
             }
         } // if item does not exist in item list, create new object
 
@@ -165,7 +159,7 @@ public class FileHandler {
 
             existingCustomer = (Customer) itr.next();
 
-            if (csvCustomer.getDisplayName().equals(name)) {
+            if (existingCustomer.getDisplayName().equals(name)) {
 
                 return existingCustomer;
 
@@ -202,7 +196,42 @@ public class FileHandler {
         BigDecimal totalAmount = new BigDecimal((Double.parseDouble(data[29]) * Double.parseDouble(data[31])));
         lineItem.setAmount(totalAmount);
 
-        // line fields
+        return lineItem;
+    }
+
+    public void createNewInvoices(ArrayList<Line> lineList, String[] customerInfo, List<Customer> workingCustomerList)
+            throws OAuthException, FMSException {
+        
+        String customerName = customerInfo[3];
+        ReferenceType ref = new ReferenceType();
+        Invoice newInvoice = new Invoice();
+        ArrayList<Line> finalLineList = new ArrayList<Line>(lineList);
+
+                
+
+        Customer customer = customerLocator(workingCustomerList, customerName);
+              
+        PhysicalAddress shipAddr = new PhysicalAddress();
+        PhysicalAddress billAddr = new PhysicalAddress();
+        
+        shipAddr.setLine1(customerInfo[15]);
+        shipAddr.setLine2(customerInfo[16]);
+        shipAddr.setLine3(customerInfo[17]);
+        shipAddr.setPostalCode(customerInfo[20]);
+        shipAddr.setCity(customerInfo[18]);
+        shipAddr.setCountrySubDivisionCode(customerInfo[11]);
+
+        billAddr.setLine1(customerInfo[8]);
+        billAddr.setLine2(customerInfo[9]);
+        billAddr.setLine3(customerInfo[10]);
+        billAddr.setPostalCode(customerInfo[13]);
+        billAddr.setCity(customerInfo[11]);
+        billAddr.setCountrySubDivisionCode(customerInfo[12]);
+
+        customer.setBillAddr(billAddr);
+        customer.setShipAddr(shipAddr);
+        
+                // line fields
         // customer = data.get(3);
         // billingAddress = data.get(8);
         // billCity = data.get(11);
@@ -222,20 +251,6 @@ public class FileHandler {
         // lineUnitPrice = data.get(31);
         // lineUnitTaxable = "N";
 
-        return lineItem;
-    }
-
-    public void createNewInvoices(ArrayList<Line> lineList, String customerName, List<Customer> workingCustomerList)
-            throws OAuthException, FMSException {
-
-        ReferenceType ref = new ReferenceType();
-        Invoice newInvoice = new Invoice();
-        ArrayList<Line> finalLineList = new ArrayList<Line>(lineList);
-
-        Customer customer = customerLocator(workingCustomerList, customerName);
-
-        System.out.println(customerName);
-
         Collections.sort(finalLineList, new Comparator<Line>() {
             @Override
             public int compare(Line s1, Line s2) {
@@ -243,8 +258,20 @@ public class FileHandler {
             }
         });
 
+        if (customer.getDisplayName().equals("Bold Bean Jax Beach") || customer.getDisplayName().equals("Bold Bean Riverside")) {
+            Line discount = new Line();
+            ReferenceType discountRef = new ReferenceType();
+            DiscountLineDetail discountLineDetail = new DiscountLineDetail();
+            discountLineDetail.setPercentBased(true);
+            discountLineDetail.setDiscountPercent(new BigDecimal (15));
+            discount.setDiscountLineDetail(discountLineDetail);
+            discount.setDetailType(LineDetailTypeEnum.DISCOUNT_LINE_DETAIL);
+            finalLineList.add(discount);            
+
+        }
         newInvoice.setLine(finalLineList);
         newInvoice.setCustomerRef(ref);
+
         ref.setValue(customer.getId());
         ref.setName(customerName);
 

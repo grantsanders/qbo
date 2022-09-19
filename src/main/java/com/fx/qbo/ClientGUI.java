@@ -183,16 +183,21 @@ public class ClientGUI {
 
 		importerButton.addActionListener(e -> {
 
-			api.setAuthCode(authCode);
 			importerLabel.setText("Formatting and posting invoices...");
 
+			api.setAuthCode(authCode);
+
 			if ((fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length()).equals("csv")) == false) {
+
 				importerLabel.setText("does that look like a csv to you??");
+
 			} else {
+
 				api.getServiceHandler();
 				FileHandler handler = new FileHandler(filePath, api);
 
 				try {
+
 					int invoiceCounter = handler.formatData();
 					if (invoiceCounter == 1) {importerLabel.setText("Done- created " + invoiceCounter + " invoice");}
 					else {importerLabel.setText("Done- created " + invoiceCounter + " invoices");}
@@ -202,12 +207,10 @@ public class ClientGUI {
 					OAuthException.setVisible(true);
 					e1.printStackTrace();
 				} catch (FMSException e1) {
+					Popup FMSException = new Popup("FMSException", "Error: Invalid Request.");
+					FMSException.setVisible(true);
 					e1.printStackTrace();
 				}
-				// handler.formatData();
-				// handler.testItems();
-				// handler.createAndPostInvoices();
-
 			}
 		});
 
