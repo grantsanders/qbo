@@ -13,9 +13,9 @@ import java.util.Scanner;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.intuit.ipp.data.BatchItemRequest;
 import com.intuit.ipp.data.Customer;
 import com.intuit.ipp.data.DiscountLineDetail;
+import com.intuit.ipp.data.EmailAddress;
 import com.intuit.ipp.data.Invoice;
 import com.intuit.ipp.data.Item;
 import com.intuit.ipp.data.ItemTypeEnum;
@@ -26,8 +26,6 @@ import com.intuit.ipp.data.ReferenceType;
 import com.intuit.ipp.data.SalesItemLineDetail;
 import com.intuit.ipp.data.TaxLineDetail;
 import com.intuit.ipp.exception.FMSException;
-import com.intuit.ipp.serialization.BatchItemRequestSerializer;
-import com.intuit.oauth2.data.Address;
 import com.intuit.oauth2.exception.OAuthException;
 
 public class FileHandler {
@@ -149,12 +147,13 @@ public class FileHandler {
 
     public Customer customerLocator(List<Customer> workingCustomerList, String name) {
 
+        
         Customer csvCustomer = new Customer();
         csvCustomer.setDisplayName(name);
         Customer existingCustomer;
 
         java.util.Iterator itr = workingCustomerList.iterator();
-
+        
         while (itr.hasNext()) {
 
             existingCustomer = (Customer) itr.next();
@@ -220,6 +219,10 @@ public class FileHandler {
         shipAddr.setPostalCode(customerInfo[20]);
         shipAddr.setCity(customerInfo[18]);
         shipAddr.setCountrySubDivisionCode(customerInfo[11]);
+
+        EmailAddress emailAddress = new EmailAddress();
+        emailAddress.setAddress(customerInfo[24]);
+        
 
         billAddr.setLine1(customerInfo[8]);
         billAddr.setLine2(customerInfo[9]);

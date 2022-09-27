@@ -29,20 +29,20 @@ public class APIController {
   public APIController() {
   }
 
-  private static String clientId = "ABUUUFqGcAlG9vL09YJqvxYs4H0MZ1OQAp5Obj1PjWpDiVUSv5";
-  private static String clientSecret = "jeVET4dMqTElbxnxQX5BZ3uLW1CUHWlEtiUkXAWs";
-  private static String redirectUri = "http://localhost:8080/oauth2redirect";
+  private static String clientId = "AByWXkkIcgS5jJXjmrUctcfmF4sqqYP6QeFwyiXJUbzH1Elsva";
+  private static String clientSecret = "BX3ZYkXQIkkEWQVqFwON42bMoD3Immg15uEP0Jmn";
+  private static String redirectUri = "https://oauth.platform.intuit.com/op/v1";
   private static String authCode = "code";
   private static String url = "";
   private static String accessToken = "";
   private static String refreshToken = "";
   private static String realmId = "";
-  private static String baseURL = "https://sandbox-quickbooks.api.intuit.com/v3/company";
+  private static String baseURL = "https://quickbooks.api.intuit.com/";
   private static Context context;
   private static DataService service;
 
   private OAuth2Config oauth2Config = new OAuth2Config.OAuth2ConfigBuilder(clientId, clientSecret)
-      .callDiscoveryAPI(Environment.SANDBOX)
+      .callDiscoveryAPI(Environment.PRODUCTION)
       .buildConfig();
 
   public void setOAuthUrl() throws InvalidRequestException, IOException, OAuthException {
@@ -51,15 +51,10 @@ public class APIController {
     List<Scope> scopes = new ArrayList<Scope>();
 
     scopes.add(Scope.Accounting);
-    scopes.add(Scope.OpenId);
-    scopes.add(Scope.Email);
-    scopes.add(Scope.Address);
-    scopes.add(Scope.Phone);
-    scopes.add(Scope.Profile);
 
     url = oauth2Config.prepareUrl(scopes, redirectUri, csrf);
     Config.setProperty(Config.BASE_URL_QBO, baseURL);
-
+    
   }
 
   public void getServiceHandler() {
