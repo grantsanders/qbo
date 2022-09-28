@@ -36,6 +36,7 @@ public class ClientGUI {
 	public static APIController api = new APIController();
 	private static String filePath = "";
 	private static String fileName = "";
+	private static JFrame browser = new JFrame("beansquad importer");
 
 	private static void buildConnectPanel() {
 
@@ -73,21 +74,21 @@ public class ClientGUI {
 
 	private static void buildAuthBrowser() {
 
-		JFrame browser = new JFrame("beansquad importer");
+		// JFrame browser = new JFrame("beansquad importer");
 		final JFXPanel fxPanel = new JFXPanel();
 		browser.add(fxPanel);
 		browser.setSize(800, 600);
 		browser.setLocationRelativeTo(null);
 		browser.setVisible(true);
+		// browser.addWindowListener(new java.awt.event.WindowAdapter() {
 
-		browser.addWindowListener(new java.awt.event.WindowAdapter() {
-			@Override
-			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-				api.setAuthCode(authCode);
-				api.setRealmId(realmId);
-				buildUserPlatform();
-			}
-		});
+		// 	@Override
+		// 	public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+		// 		api.setAuthCode(authCode);
+		// 		api.setRealmId(realmId);
+		// 		buildUserPlatform();
+		// 	}
+		// });
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
@@ -126,7 +127,12 @@ public class ClientGUI {
 			if (Worker.State.SUCCEEDED.equals(newValue)) {
 				setCode(authBrowser.getLocation());
 				setRealmId(authBrowser.getLocation());
-				if (realmId.equals(API_Constants.getRealmId())) {view.setVisible(false);}
+				if (realmId.equals(API_Constants.getRealmId())) {
+					browser.setVisible(false);
+					api.setAuthCode(authCode);
+					api.setRealmId(realmId);
+					buildUserPlatform();
+				}
 			}
 		});
 		root.getChildren().add(view);
@@ -186,7 +192,7 @@ public class ClientGUI {
 
 			importerLabel.setText("Formatting and posting invoices...");
 
-			api.setAuthCode(authCode);
+			// api.setAuthCode(authCode);
 
 			if ((fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length()).equals("csv")) == false) {
 
@@ -200,9 +206,12 @@ public class ClientGUI {
 				try {
 
 					int invoiceCounter = handler.formatData();
-					if (invoiceCounter == 1) {importerLabel.setText("Done- created " + invoiceCounter + " invoice");}
-					else {importerLabel.setText("Done- created " + invoiceCounter + " invoices");}
-					
+					if (invoiceCounter == 1) {
+						importerLabel.setText("Done- created " + invoiceCounter + " invoice");
+					} else {
+						importerLabel.setText("Done- created " + invoiceCounter + " invoices");
+					}
+
 				} catch (OAuthException e1) {
 					Popup OAuthException = new Popup("OAuthException", "Error: Invalid OAuth Request");
 					OAuthException.setVisible(true);
