@@ -29,8 +29,8 @@ public class APIController {
   public APIController() {
   }
 
-  private static String clientId = "AByWXkkIcgS5jJXjmrUctcfmF4sqqYP6QeFwyiXJUbzH1Elsva";
-  private static String clientSecret = "BX3ZYkXQIkkEWQVqFwON42bMoD3Immg15uEP0Jmn";
+  private static String clientId = API_Constants.getClientId();
+  private static String clientSecret = API_Constants.getClientSecret();
   private static String redirectUri = "https://oauth.platform.intuit.com/op/v1";
   private static String authCode = "code";
   private static String url = "";
