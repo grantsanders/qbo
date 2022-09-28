@@ -2,7 +2,6 @@ package com.fx.qbo;
 
 import java.io.IOException;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +13,7 @@ import com.intuit.ipp.data.Item;
 import com.intuit.ipp.exception.FMSException;
 import com.intuit.ipp.security.OAuth2Authorizer;
 import com.intuit.ipp.services.DataService;
+import com.intuit.ipp.services.QueryResult;
 import com.intuit.ipp.util.Config;
 import com.intuit.oauth2.client.OAuth2PlatformClient;
 
@@ -37,7 +37,7 @@ public class APIController {
   private static String accessToken = "";
   private static String refreshToken = "";
   private static String realmId = "";
-  private static String baseURL = "https://quickbooks.api.intuit.com/";
+  private static String baseURL = "https://quickbooks.api.intuit.com/v3/company";
   private static Context context;
   private static DataService service;
 
@@ -51,10 +51,15 @@ public class APIController {
     List<Scope> scopes = new ArrayList<Scope>();
 
     scopes.add(Scope.Accounting);
+    scopes.add(Scope.OpenId);
+    scopes.add(Scope.Email);
+    scopes.add(Scope.Address);
+    scopes.add(Scope.Phone);
+    scopes.add(Scope.Profile);
 
     url = oauth2Config.prepareUrl(scopes, redirectUri, csrf);
     Config.setProperty(Config.BASE_URL_QBO, baseURL);
-    
+
   }
 
   public void getServiceHandler() {
@@ -63,6 +68,7 @@ public class APIController {
       OAuth2PlatformClient client = new OAuth2PlatformClient(oauth2Config);
       BearerTokenResponse bearerTokenResponse = client.retrieveBearerTokens(authCode, redirectUri);
       accessToken = bearerTokenResponse.getAccessToken();
+      // refreshToken = bearerTokenResponse.getRefreshToken();
       Config.setProperty(Config.BASE_URL_QBO, baseURL);
       OAuth2Authorizer authorizer = new OAuth2Authorizer(accessToken);
       context = new Context(authorizer, ServiceType.QBO, realmId);
@@ -81,25 +87,47 @@ public class APIController {
 
   }
 
+  // public List<Account> getAccounts() {
+  //   Account account = new Account();
+  //   List<Account> accounts = new ArrayList<Account>();
+  //   try {
+  //     accounts = service.findAll(account);
+  //     return accounts;
+
+  //   } catch (FMSException e) {
+  //     Popup FMSException = new Popup("FMSException", "Error: FMS Exception");
+  //     FMSException.setVisible(true);
+  //     e.printStackTrace();
+  //   }
+  //   return accounts;
+  // }
+
   public List<Customer> getCustomerList() {
     Customer customer = new Customer();
     List<Customer> workingCustomersList = null;
     try {
-      workingCustomersList = service.findAll(customer);
+      String sql = "select * from customer startposition 1 maxResults 1000";
+
+      QueryResult result = service.executeQuery(sql);
+      
+      workingCustomersList = (List<Customer>) result.getEntities();
+      return workingCustomersList;
     } catch (FMSException e) {
-      // TODO Auto-generated catch block
+      Popup FMSException = new Popup("FMSException", "Error: FMS Exception");
+      FMSException.setVisible(true);
       e.printStackTrace();
     }
     return workingCustomersList;
 
   }
 
-  public Customer createNewCustomer (Customer newCustomer) {
+  public Customer createNewCustomer(Customer newCustomer) {
 
     try {
       service.add(newCustomer);
     } catch (FMSException e) {
-      // TODO Auto-generated catch block
+      Popup FMSException = new Popup("FMSException", "Error: FMS Exception");
+      FMSException.setVisible(true);
       e.printStackTrace();
     }
 
@@ -111,7 +139,6 @@ public class APIController {
     for (int i = 0; i < invoices.size(); i++) {
 
       try {
-
         service.add(invoices.get(i));
 
       } catch (FMSException e) {
@@ -156,11 +183,18 @@ public class APIController {
 
     List<Item> items;
     try {
-      items = service.findAll(item);
+      String sql = "select * from item startposition 1 maxResults 1000";
+
+      QueryResult result = service.executeQuery(sql);
+      
+      items = (List<Item>) result.getEntities();
       return items;
 
     } catch (FMSException e) {
+      Popup FMSException = new Popup("FMSException", "Error: FMS Exception");
+      FMSException.setVisible(true);
       e.printStackTrace();
+
     }
 
     // if somehow this fails

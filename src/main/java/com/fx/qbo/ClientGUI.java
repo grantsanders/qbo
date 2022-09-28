@@ -19,6 +19,7 @@ import javafx.concurrent.Worker;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.paint.Stop;
 import javafx.scene.web.WebView;
 import javafx.scene.web.WebEngine;
 
@@ -125,7 +126,7 @@ public class ClientGUI {
 			if (Worker.State.SUCCEEDED.equals(newValue)) {
 				setCode(authBrowser.getLocation());
 				setRealmId(authBrowser.getLocation());
-
+				if (realmId.equals(API_Constants.getRealmId())) {view.setVisible(false);}
 			}
 		});
 		root.getChildren().add(view);

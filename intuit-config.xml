@@ -1,7 +1,7 @@
 <intuit-config>
    <message>
       <baseURL>
-      <qbo>https://quickbooks.api.intuit.com/v3/company</qbo>
+      <qbo>https://quickbooks.api.intuit.com/v3/company/</qbo>
        </baseURL>
       <request>
          <compression>gzip</compression>

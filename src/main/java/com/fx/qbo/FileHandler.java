@@ -122,14 +122,15 @@ public class FileHandler {
         Item existingItem = new Item();
         Iterator itr = existingItemsList.iterator();
         ReferenceType itemRef = new ReferenceType();
-        itemRef.setValue("91");
+        itemRef.setValue("1");
+
 
         while (itr.hasNext()) {
 
             existingItem = (Item) itr.next();
 
             if (existingItem.getName().equals(name)) { // check to see if item update is necessary
-
+                System.out.println("Using existing item - existing name = " + existingItem.getName() + " test name = " + name + "\n\n\n");
                 existingItem.setUnitPrice(new BigDecimal(unitPrice));
                 return existingItem;
             }
@@ -139,10 +140,25 @@ public class FileHandler {
 
         csvItem.setName(name);
         csvItem.setType(ItemTypeEnum.NON_INVENTORY);
+        
         csvItem.setIncomeAccountRef(itemRef);
+
         existingItemsList.add(csvItem);
 
-        return api.createNewItem(csvItem);
+        // System.out.println("\n\n\n");
+
+
+        // System.out.println("existing item: " + gson.toJson(existingItem));
+
+        // System.out.println("\n\n\n");
+
+        // System.out.println("csv item: " + gson.toJson(csvItem));
+
+        // System.out.println("\n\n\n");
+
+        
+
+        return api.updateItem(csvItem);
     }
 
     public Customer customerLocator(List<Customer> workingCustomerList, String name) {
