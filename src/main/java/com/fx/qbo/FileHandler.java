@@ -38,10 +38,6 @@ public class FileHandler {
     ArrayList<Line> lineList = new ArrayList<Line>();
     Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-    public FileHandler() {
-
-    }
-
     public FileHandler(String filePath, APIController apiController) {
         path = filePath;
         api = apiController;
@@ -59,8 +55,6 @@ public class FileHandler {
         System.out.println(workingCustomerList.size());
         System.out.println("\n\n\n");
 
-
-
         int invoiceCounter = 0;
 
         try {
@@ -68,7 +62,6 @@ public class FileHandler {
             File inFile = new File(path);
             FileReader input = new FileReader(inFile);
             Scanner in = new Scanner(input);
-
 
             // TODO: change iteration to split on ("\n") instead of nextline()
 
@@ -137,13 +130,13 @@ public class FileHandler {
         ReferenceType itemRef = new ReferenceType();
         itemRef.setValue("1");
 
-
         while (itr.hasNext()) {
 
             existingItem = (Item) itr.next();
 
             if (existingItem.getName().equals(name)) { // check to see if item update is necessary
-                System.out.println("Using existing item - existing name = " + existingItem.getName() + " test name = " + name + "\n\n\n");
+                System.out.println("Using existing item - existing name = " + existingItem.getName() + " test name = "
+                        + name + "\n\n\n");
                 existingItem.setUnitPrice(new BigDecimal(unitPrice));
                 return existingItem;
             }
@@ -153,13 +146,12 @@ public class FileHandler {
 
         csvItem.setName(name);
         csvItem.setType(ItemTypeEnum.NON_INVENTORY);
-        
+
         csvItem.setIncomeAccountRef(itemRef);
 
         existingItemsList.add(csvItem);
 
         // System.out.println("\n\n\n");
-
 
         // System.out.println("existing item: " + gson.toJson(existingItem));
 
@@ -169,20 +161,17 @@ public class FileHandler {
 
         // System.out.println("\n\n\n");
 
-        
-
         return api.updateItem(csvItem);
     }
 
     public Customer customerLocator(List<Customer> workingCustomerList, String name) {
 
-        
         Customer csvCustomer = new Customer();
         csvCustomer.setDisplayName(name);
         Customer existingCustomer;
 
         java.util.Iterator itr = workingCustomerList.iterator();
-        
+
         while (itr.hasNext()) {
 
             existingCustomer = (Customer) itr.next();
@@ -229,19 +218,17 @@ public class FileHandler {
 
     public void createNewInvoices(ArrayList<Line> lineList, String[] customerInfo, List<Customer> workingCustomerList)
             throws OAuthException, FMSException {
-        
+
         String customerName = customerInfo[3];
         ReferenceType ref = new ReferenceType();
         Invoice newInvoice = new Invoice();
         ArrayList<Line> finalLineList = new ArrayList<Line>(lineList);
 
-                
-
         Customer customer = customerLocator(workingCustomerList, customerName);
-              
+
         PhysicalAddress shipAddr = new PhysicalAddress();
         PhysicalAddress billAddr = new PhysicalAddress();
-        
+
         shipAddr.setLine1(customerInfo[15]);
         shipAddr.setLine2(customerInfo[16]);
         shipAddr.setLine3(customerInfo[17]);
@@ -251,7 +238,6 @@ public class FileHandler {
 
         EmailAddress emailAddress = new EmailAddress();
         emailAddress.setAddress(customerInfo[24]);
-        
 
         billAddr.setLine1(customerInfo[8]);
         billAddr.setLine2(customerInfo[9]);
@@ -262,8 +248,8 @@ public class FileHandler {
 
         customer.setBillAddr(billAddr);
         customer.setShipAddr(shipAddr);
-        
-                // line fields
+
+        // line fields
         // customer = data.get(3);
         // billingAddress = data.get(8);
         // billCity = data.get(11);
@@ -290,15 +276,16 @@ public class FileHandler {
             }
         });
 
-        if (customer.getDisplayName().equals("Bold Bean Jax Beach") || customer.getDisplayName().equals("Bold Bean Riverside")) {
+        if (customer.getDisplayName().equals("Bold Bean Jax Beach")
+                || customer.getDisplayName().equals("Bold Bean Riverside")) {
             Line discount = new Line();
             ReferenceType discountRef = new ReferenceType();
             DiscountLineDetail discountLineDetail = new DiscountLineDetail();
             discountLineDetail.setPercentBased(true);
-            discountLineDetail.setDiscountPercent(new BigDecimal (15));
+            discountLineDetail.setDiscountPercent(new BigDecimal(15));
             discount.setDiscountLineDetail(discountLineDetail);
             discount.setDetailType(LineDetailTypeEnum.DISCOUNT_LINE_DETAIL);
-            finalLineList.add(discount);            
+            finalLineList.add(discount);
 
         }
         newInvoice.setLine(finalLineList);

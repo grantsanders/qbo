@@ -81,12 +81,12 @@ public class ClientGUI {
 		browser.setVisible(true);
 		// browser.addWindowListener(new java.awt.event.WindowAdapter() {
 
-		// 	@Override
-		// 	public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-		// 		api.setAuthCode(authCode);
-		// 		api.setRealmId(realmId);
-		// 		buildUserPlatform();
-		// 	}
+		// @Override
+		// public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+		// api.setAuthCode(authCode);
+		// api.setRealmId(realmId);
+		// buildUserPlatform();
+		// }
 		// });
 		Platform.runLater(new Runnable() {
 			@Override
@@ -185,9 +185,12 @@ public class ClientGUI {
 				main.add(importerButton, mgr);
 
 			}
+			importerButton.addActionListener(x -> {
+				importerLabel.setText("Formatting and posting invoices...");
+			});
 		});
 
-		importerButton.addActionListener(e -> {
+		importerButton.addActionListener(x -> {
 
 			importerLabel.setText("Formatting and posting invoices...");
 
