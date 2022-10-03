@@ -19,7 +19,6 @@ import javafx.concurrent.Worker;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.paint.Stop;
 import javafx.scene.web.WebView;
 import javafx.scene.web.WebEngine;
 

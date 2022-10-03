@@ -52,6 +52,15 @@ public class FileHandler {
         List<Item> workingItemList = api.getItemList();
         List<Customer> workingCustomerList = api.getCustomerList();
 
+        System.out.println("\n\n\n");
+        System.out.println(workingItemList.size());
+        System.out.println("\n\n\n");
+
+        System.out.println(workingCustomerList.size());
+        System.out.println("\n\n\n");
+
+
+
         int invoiceCounter = 0;
 
         try {
@@ -59,6 +68,10 @@ public class FileHandler {
             File inFile = new File(path);
             FileReader input = new FileReader(inFile);
             Scanner in = new Scanner(input);
+
+
+            // TODO: change iteration to split on ("\n") instead of nextline()
+
             in.nextLine();
             ArrayList<String[]> baseItems = new ArrayList<String[]>();
 
@@ -174,7 +187,7 @@ public class FileHandler {
 
             existingCustomer = (Customer) itr.next();
 
-            if (existingCustomer.getDisplayName().equals(name)) {
+            if (existingCustomer.getDisplayName().equalsIgnoreCase(name)) {
 
                 return existingCustomer;
 
