@@ -21,6 +21,7 @@ import com.intuit.ipp.data.Item;
 import com.intuit.ipp.data.ItemTypeEnum;
 import com.intuit.ipp.data.Line;
 import com.intuit.ipp.data.LineDetailTypeEnum;
+import com.intuit.ipp.data.MemoRef;
 import com.intuit.ipp.data.PhysicalAddress;
 import com.intuit.ipp.data.ReferenceType;
 import com.intuit.ipp.data.SalesItemLineDetail;
@@ -37,6 +38,10 @@ public class FileHandler {
     public static APIController api;
     ArrayList<Line> lineList = new ArrayList<Line>();
     Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+    public FileHandler() {
+
+    }
 
     public FileHandler(String filePath, APIController apiController) {
         path = filePath;
@@ -63,18 +68,28 @@ public class FileHandler {
             FileReader input = new FileReader(inFile);
             Scanner in = new Scanner(input);
 
-            // TODO: change iteration to split on ("\n") instead of nextline()
-
             in.nextLine();
             ArrayList<String[]> baseItems = new ArrayList<String[]>();
 
             while (in.hasNext()) {
 
                 String line = in.nextLine();
+
+                // while line does not end with "","" continue adding nextLine to line. tis is to account for potential occurrences
+                // of newline character within customer memo section
+
+                while (!(line.endsWith("\"\",\"\""))) {
+                    line += " " + in.nextLine();
+                }
+
                 String[] split = line.split("\",\"");
+
                 split[0] = split[0].replace("\"", "");
                 baseItems.add(split);
 
+                for (int i = 0; i < split.length; i++) {
+                    System.out.println((i + 1) + split[i]);
+                }
             }
 
             String[] currentArray = baseItems.get(0);
@@ -150,16 +165,6 @@ public class FileHandler {
         csvItem.setIncomeAccountRef(itemRef);
 
         existingItemsList.add(csvItem);
-
-        // System.out.println("\n\n\n");
-
-        // System.out.println("existing item: " + gson.toJson(existingItem));
-
-        // System.out.println("\n\n\n");
-
-        // System.out.println("csv item: " + gson.toJson(csvItem));
-
-        // System.out.println("\n\n\n");
 
         return api.updateItem(csvItem);
     }
@@ -290,6 +295,11 @@ public class FileHandler {
         }
         newInvoice.setLine(finalLineList);
         newInvoice.setCustomerRef(ref);
+
+        MemoRef memo = new MemoRef();
+        memo.setValue(customerInfo[23]);
+
+        newInvoice.setCustomerMemo(memo);
 
         ref.setValue(customer.getId());
         ref.setName(customerName);
