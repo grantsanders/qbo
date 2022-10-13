@@ -2,8 +2,9 @@ plugins {
 	id 'org.springframework.boot' version '2.7.3'
 	id 'io.spring.dependency-management' version '1.0.13.RELEASE'
 	id 'java'
-	id 'application'
-	id 'org.openjfx.javafxplugin' version '0.0.10'
+	id 'org.openjfx.javafxplugin' version '0.0.13'
+    id 'org.beryx.runtime' version '1.12.7'
+
 }
 
 application {
@@ -11,16 +12,21 @@ application {
 }
 
 javafx {
-	version '18.0.2'
-	modules = [ 'javafx.controls', 'javafx.web', 'javafx.base', 'javafx.swing', 'javafx.fxml' ]
+	version '19'
+	modules = [ 'javafx.controls', 'javafx.web', 'javafx.swing', 'javafx.fxml' ]
 }
 
 group = 'com.fx'
-version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '18'
+version = '1.0'
+sourceCompatibility = '18.0.2'
 
 repositories {
 	mavenCentral()
+}
+
+runtime {
+    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+    modules = ['java.naming', 'java.xml', 'java.desktop']
 }
 
 dependencies {
@@ -30,9 +36,6 @@ dependencies {
 	implementation  (group: 'com.intuit.quickbooks-online', name: 'ipp-v3-java-devkit', version: '6.0.7', classifier: 'jar-with-dependencies')
 	implementation (group: 'com.intuit.quickbooks-online', name: 'oauth2-platform-api', version: '6.0.7', classifier: 'jar-with-dependencies')
 	implementation 'com.google.code.gson:gson:2.9.1'
-	implementation('org.springframework.boot:spring-boot-starter-web')
-	providedRuntime('org.springframework.boot:spring-boot-starter-tomcat')
-
 }
 
 tasks.named('test') {

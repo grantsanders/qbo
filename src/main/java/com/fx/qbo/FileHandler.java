@@ -128,6 +128,8 @@ public class FileHandler {
 
             System.out.println("Created " + invoiceCounter + " invoices");
 
+            in.close();
+
         } catch (FileNotFoundException e) {
 
             Popup FileNotFoundException = new Popup("FileNotFoundException", "Error: File not found");

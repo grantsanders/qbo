@@ -6,6 +6,7 @@ build/
 !**/src/test/**/build/
 
 
+
 ### STS ###
 .apt_generated
 .classpath
@@ -38,3 +39,6 @@ out/
 .vscode/
 src/main/java/com/fx/qbo/API_Constants.java
 bin/main/keystore/baeldung.p12
+build/*
+# Ignore Gradle build output directory
+build
