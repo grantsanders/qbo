@@ -66,6 +66,11 @@ public class ClientGUI {
 				Popup IOException = new Popup("IOException", "Error: Invalid Input/Output");
 				IOException.setVisible(true);
 			}
+
+			// todo- read stored refresh token from file and check validity. if it fails,
+			// request user
+			// authentication to get authcode, exchange for new refresh token and store
+
 			buildAuthBrowser();
 		});
 
@@ -130,6 +135,7 @@ public class ClientGUI {
 					browser.setVisible(false);
 					api.setAuthCode(authCode);
 					api.setRealmId(realmId);
+					api.getServiceHandler();
 					buildUserPlatform();
 				}
 			}
@@ -194,21 +200,19 @@ public class ClientGUI {
 
 			importerLabel.setText("Formatting and posting invoices...");
 
-			// api.setAuthCode(authCode);
-
 			if ((fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length()).equals("csv")) == false) {
 
 				importerLabel.setText("does that look like a csv to you??");
 
 			} else {
 
-				api.getServiceHandler();
 				FileHandler handler = new FileHandler(filePath, api);
 
 				try {
 
 					int invoiceCounter = handler.formatData();
 					if (invoiceCounter == 1) {
+						frame.remove(importerButton);
 						importerLabel.setText("Done- created " + invoiceCounter + " invoice");
 					} else {
 						importerLabel.setText("Done- created " + invoiceCounter + " invoices");

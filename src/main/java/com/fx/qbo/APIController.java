@@ -1,7 +1,9 @@
 package com.fx.qbo;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +29,7 @@ import com.intuit.oauth2.exception.OAuthException;
 public class APIController {
 
   public APIController() {
+
   }
 
   private static String clientId = API_Constants.getClientId();
@@ -65,10 +68,17 @@ public class APIController {
   public void getServiceHandler() {
 
     try {
+      File tokenStore = new File("tokenStore.txt");
+      PrintWriter tokenWriter = new PrintWriter(tokenStore);
       OAuth2PlatformClient client = new OAuth2PlatformClient(oauth2Config);
+
       BearerTokenResponse bearerTokenResponse = client.retrieveBearerTokens(authCode, redirectUri);
+
       accessToken = bearerTokenResponse.getAccessToken();
-      // refreshToken = bearerTokenResponse.getRefreshToken();
+      refreshToken = bearerTokenResponse.getRefreshToken();
+
+      tokenWriter.write(refreshToken);
+
       Config.setProperty(Config.BASE_URL_QBO, baseURL);
       OAuth2Authorizer authorizer = new OAuth2Authorizer(accessToken);
       context = new Context(authorizer, ServiceType.QBO, realmId);
@@ -83,23 +93,26 @@ public class APIController {
       Popup FMSException = new Popup("FMSException", "Error: FMS Exception");
       FMSException.setVisible(true);
       e.printStackTrace();
+    } catch (FileNotFoundException e) {
+      System.out.println("bruh how");
+      e.printStackTrace();
     }
 
   }
 
   // public List<Account> getAccounts() {
-  //   Account account = new Account();
-  //   List<Account> accounts = new ArrayList<Account>();
-  //   try {
-  //     accounts = service.findAll(account);
-  //     return accounts;
+  // Account account = new Account();
+  // List<Account> accounts = new ArrayList<Account>();
+  // try {
+  // accounts = service.findAll(account);
+  // return accounts;
 
-  //   } catch (FMSException e) {
-  //     Popup FMSException = new Popup("FMSException", "Error: FMS Exception");
-  //     FMSException.setVisible(true);
-  //     e.printStackTrace();
-  //   }
-  //   return accounts;
+  // } catch (FMSException e) {
+  // Popup FMSException = new Popup("FMSException", "Error: FMS Exception");
+  // FMSException.setVisible(true);
+  // e.printStackTrace();
+  // }
+  // return accounts;
   // }
 
   public List<Customer> getCustomerList() {
@@ -109,7 +122,7 @@ public class APIController {
       String sql = "select * from customer startposition 1 maxResults 1000";
 
       QueryResult result = service.executeQuery(sql);
-      
+
       workingCustomersList = (List<Customer>) result.getEntities();
       return workingCustomersList;
     } catch (FMSException e) {
@@ -186,7 +199,7 @@ public class APIController {
       String sql = "select * from item startposition 1 maxResults 1000";
 
       QueryResult result = service.executeQuery(sql);
-      
+
       items = (List<Item>) result.getEntities();
       return items;
 

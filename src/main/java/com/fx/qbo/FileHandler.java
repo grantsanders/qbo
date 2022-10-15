@@ -53,12 +53,12 @@ public class FileHandler {
         List<Item> workingItemList = api.getItemList();
         List<Customer> workingCustomerList = api.getCustomerList();
 
-        System.out.println("\n\n\n");
-        System.out.println(workingItemList.size());
-        System.out.println("\n\n\n");
+        // System.out.println("\n\n\n");
+        // System.out.println(workingItemList.size());
+        // System.out.println("\n\n\n");
 
-        System.out.println(workingCustomerList.size());
-        System.out.println("\n\n\n");
+        // System.out.println(workingCustomerList.size());
+        // System.out.println("\n\n\n");
 
         int invoiceCounter = 0;
 
@@ -255,26 +255,6 @@ public class FileHandler {
 
         customer.setBillAddr(billAddr);
         customer.setShipAddr(shipAddr);
-
-        // line fields
-        // customer = data.get(3);
-        // billingAddress = data.get(8);
-        // billCity = data.get(11);
-        // billState = data.get(12);
-        // billZip = data.get(13);
-        // shippingAddress = data.get(15);
-        // shipCity = data.get(18);
-        // shipState = data.get(19);
-        // shipZip = data.get(20);
-        // privateNote = data.get(22);
-        // msg = data.get(23);
-        // billEmail = data.get(24);
-        // lineItem = data.get(27);
-        // lineUoM = data.get(28);
-        // lineQty = data.get(29);
-        // lineDescription = data.get(30);
-        // lineUnitPrice = data.get(31);
-        // lineUnitTaxable = "N";
 
         Collections.sort(finalLineList, new Comparator<Line>() {
             @Override
