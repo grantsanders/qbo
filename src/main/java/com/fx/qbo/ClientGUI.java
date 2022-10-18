@@ -199,23 +199,25 @@ public class ClientGUI {
 		importerButton.addActionListener(x -> {
 
 			importerLabel.setText("Formatting and posting invoices...");
+			main.repaint();
 
 			if ((fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length()).equals("csv")) == false) {
 
 				importerLabel.setText("does that look like a csv to you??");
-
 			} else {
 
 				FileHandler handler = new FileHandler(filePath, api);
 
 				try {
-
+					main.remove(importerButton);
+					main.repaint();
 					int invoiceCounter = handler.formatData();
 					if (invoiceCounter == 1) {
-						frame.remove(importerButton);
+
 						importerLabel.setText("Done- created " + invoiceCounter + " invoice");
 					} else {
 						importerLabel.setText("Done- created " + invoiceCounter + " invoices");
+
 					}
 
 				} catch (OAuthException e1) {
