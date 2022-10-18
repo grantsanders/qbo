@@ -209,8 +209,10 @@ public class ClientGUI {
 				FileHandler handler = new FileHandler(filePath, api);
 
 				try {
+
 					main.remove(importerButton);
 					main.repaint();
+
 					int invoiceCounter = handler.formatData();
 					if (invoiceCounter == 1) {
 
