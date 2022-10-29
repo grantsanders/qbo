@@ -8,6 +8,7 @@ import javax.swing.JPanel;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 
 import com.intuit.ipp.exception.FMSException;
@@ -217,6 +218,11 @@ public class ClientGUI {
 					if (invoiceCounter == 1) {
 
 						importerLabel.setText("Done- created " + invoiceCounter + " invoice");
+
+						File oldCsvFile = new File(filePath);
+
+						oldCsvFile.delete();
+
 					} else {
 						importerLabel.setText("Done- created " + invoiceCounter + " invoices");
 
