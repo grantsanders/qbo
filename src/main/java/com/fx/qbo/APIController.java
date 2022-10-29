@@ -139,7 +139,8 @@ public class APIController {
     try {
       service.add(newCustomer);
     } catch (FMSException e) {
-      Popup FMSException = new Popup("FMSException", "Error: FMS Exception");
+      Popup FMSException = new Popup("FMSException",
+          ("Error: Issue with customer \"" + newCustomer.getDisplayName() + "\""));
       FMSException.setVisible(true);
       e.printStackTrace();
     }
