@@ -123,9 +123,9 @@ public class FileHandler {
 
             createNewInvoices(lineList, currentArray, workingCustomerList);
 
-            // System.out.println(gson.toJson(finalInvoiceList));
+            System.out.println(gson.toJson(finalInvoiceList));
 
-            // api.postInvoices(finalInvoiceList);
+            api.postInvoices(finalInvoiceList);
             api.postRecords(finalInvoiceList);
 
             System.out.println("Created " + invoiceCounter + " invoices");
