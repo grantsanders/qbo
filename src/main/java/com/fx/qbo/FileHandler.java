@@ -75,7 +75,8 @@ public class FileHandler {
 
                 String line = in.nextLine();
 
-                // while line does not end with "","" continue adding nextLine to line. tis is to account for potential occurrences
+                // while line does not end with "","" continue adding nextLine to line. tis is
+                // to account for potential occurrences
                 // of newline character within customer memo section
 
                 while (!(line.endsWith("\"\",\"\""))) {
@@ -122,9 +123,10 @@ public class FileHandler {
 
             createNewInvoices(lineList, currentArray, workingCustomerList);
 
-            System.out.println(gson.toJson(finalInvoiceList));
+            // System.out.println(gson.toJson(finalInvoiceList));
 
-            api.postInvoices(finalInvoiceList);
+            // api.postInvoices(finalInvoiceList);
+            api.postRecords(finalInvoiceList);
 
             System.out.println("Created " + invoiceCounter + " invoices");
 

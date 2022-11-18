@@ -4,9 +4,19 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpRequest.BodyPublishers;
+import java.net.http.HttpResponse.BodyHandler;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.intuit.ipp.core.Context;
 import com.intuit.ipp.core.ServiceType;
 import com.intuit.ipp.data.Customer;
@@ -43,6 +53,7 @@ public class APIController {
   private static String baseURL = "https://quickbooks.api.intuit.com/v3/company";
   private static Context context;
   private static DataService service;
+  private static Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
   private OAuth2Config oauth2Config = new OAuth2Config.OAuth2ConfigBuilder(clientId, clientSecret)
       .callDiscoveryAPI(Environment.PRODUCTION)
@@ -213,6 +224,33 @@ public class APIController {
 
     // if somehow this fails
     return null;
+  }
+
+  public void postRecords(ArrayList<Invoice> finalInvoiceList) {
+    InvoiceRecord invoiceRecord = new InvoiceRecord();
+
+    invoiceRecord.setImportedSuccessfully(true);
+    invoiceRecord.setNumberOfInvoices(finalInvoiceList.size());
+    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+    HttpClient client = HttpClient.newHttpClient();
+    try {
+
+      HttpRequest postRequest = HttpRequest.newBuilder()
+          .uri(new URI(API_Constants.getUri()))
+          .header("Content-Type", "application/json")
+          .POST(BodyPublishers.ofString(gson.toJson(invoiceRecord)))
+          .build();
+
+      HttpResponse<String> response;
+
+      response = client.send(postRequest, BodyHandlers.ofString());
+      System.out.println(response.body());
+
+    } catch (IOException | InterruptedException | URISyntaxException e) {
+      e.printStackTrace();
+    }
+
   }
 
   public void setAuthCode(String code) {
