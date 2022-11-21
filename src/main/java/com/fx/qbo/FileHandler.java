@@ -277,6 +277,8 @@ public class FileHandler {
             finalLineList.add(discount);
 
         }
+
+        newInvoice.setAllowOnlineACHPayment(true);
         newInvoice.setLine(finalLineList);
         newInvoice.setCustomerRef(ref);
 
