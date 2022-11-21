@@ -231,7 +231,6 @@ public class APIController {
 
     invoiceRecord.setImportedSuccessfully(true);
     invoiceRecord.setNumberOfInvoices(finalInvoiceList.size());
-    Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     HttpClient client = HttpClient.newHttpClient();
     try {
